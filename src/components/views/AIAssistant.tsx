@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Send, Bot, User } from 'lucide-react'
-import { useAppStore } from '../../store/appStore'
 
 interface Message {
   id: string
@@ -20,7 +19,6 @@ export default function AIAssistant() {
     },
   ])
   const [inputText, setInputText] = useState('')
-  const { user } = useAppStore()
 
   const handleSend = () => {
     if (!inputText.trim()) return

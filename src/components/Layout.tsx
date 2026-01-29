@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import { motion } from 'framer-motion'
-import { Home, Calendar, MessageCircle, Shield, ClipboardList, Bot } from 'lucide-react'
+import { Home, MessageCircle, Shield, ClipboardList } from 'lucide-react'
 import { useAppStore } from '../store/appStore'
 
 interface LayoutProps {
