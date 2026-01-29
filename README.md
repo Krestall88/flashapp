@@ -1,36 +1,292 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Telegram Mini App - Детейлинг & Аренда 🚗
 
-## Getting Started
+Telegram Mini App для ниши детейлинга и аренды автомобилей с архитектурой "Frontend-first" и Google Sheets в качестве базы данных.
 
-First, run the development server:
+## 🛠 Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Frontend
+- **React 18** + **Vite** - Быстрая разработка и сборка
+- **TypeScript** - Типобезопасность
+- **Tailwind CSS** - Утилитарные стили
+- **Framer Motion** - Плавные анимации
+- **Zustand** - Легкий state management
+- **Lucide React** - Современные иконки
+- **@twa-dev/sdk** - Telegram Web App SDK
+- **react-day-picker** - Календарь для бронирования
+
+### Backend
+- **Node.js** + **Express** - REST API
+- **Telegraf** - Telegram Bot для уведомлений
+- **Google Sheets API** - База данных
+- **node-cache** - Кэширование (5 минут)
+
+## 📁 Структура проекта
+
+```
+flashapp/
+├── src/
+│   ├── components/
+│   │   ├── Layout.tsx              # Главный layout с навигацией
+│   │   └── views/
+│   │       ├── HomeView.tsx        # Главная страница с услугами
+│   │       ├── BookingFlow.tsx     # Многошаговая форма бронирования
+│   │       ├── AdminDashboard.tsx  # Панель администратора
+│   │       └── AIAssistant.tsx     # AI чат-ассистент (заглушка)
+│   ├── store/
+│   │   └── appStore.ts             # Zustand store
+│   ├── api/
+│   │   └── client.ts               # Axios API клиент
+│   ├── App.tsx                     # Главный компонент
+│   ├── main.tsx                    # Entry point
+│   └── index.css                   # Глобальные стили
+├── server/
+│   ├── services/
+│   │   └── sheetsService.js        # Google Sheets интеграция
+│   ├── routes/
+│   │   ├── orders.js               # API для заказов
+│   │   └── services.js             # API для услуг
+│   └── index.js                    # Express сервер
+└── index.html                      # HTML entry point
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Установка и запуск
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Установка зависимостей
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Одной командой (рекомендуется):**
+```bash
+npm run install:all
+```
 
-## Learn More
+**Или раздельно:**
+```bash
+# Frontend
+npm install
 
-To learn more about Next.js, take a look at the following resources:
+# Backend
+cd server
+npm install
+cd ..
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 2. Настройка окружения
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Создайте файл `.env` в корне проекта:
 
-## Deploy on Vercel
+```env
+VITE_API_URL=http://localhost:5000
+VITE_ADMIN_ID=your_telegram_admin_id
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Создайте файл `server/.env` (используйте `server/env-template.txt` как шаблон):
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```env
+PORT=5000
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+ADMIN_ID=your_telegram_admin_id
+GOOGLE_SHEET_ID=your_google_sheet_id
+GOOGLE_SERVICE_ACCOUNT_EMAIL=your_service_account@project.iam.gserviceaccount.com
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+```
+
+### 3. Настройка Google Sheets
+
+1. Создайте новый Google Sheet
+2. Создайте Service Account в Google Cloud Console
+3. Предоставьте доступ к таблице для Service Account email
+4. Скопируйте Sheet ID из URL и добавьте в `.env`
+
+Таблица должна содержать 3 листа:
+- **services** - Услуги (id, name, description, price, category, image, active)
+- **orders** - Заказы (id, userId, userName, service, carClass, date, time, phone, status, createdAt)
+- **settings** - Настройки (key, value)
+
+### 4. Создание Telegram Bot
+
+1. Найдите @BotFather в Telegram
+2. Создайте нового бота командой `/newbot`
+3. Получите токен и добавьте в `server/.env`
+4. Настройте Web App URL через @BotFather
+
+### 5. Запуск приложения
+
+**Одной командой (рекомендуется):**
+```bash
+npm run dev
+```
+
+Эта команда запустит одновременно:
+- ✅ Frontend (Vite) на http://localhost:3000
+- ✅ Backend (Express) на http://localhost:5000
+
+**Или раздельно:**
+```bash
+# Терминал 1 - Frontend
+npm run dev:client
+
+# Терминал 2 - Backend
+npm run dev:server
+```
+
+## 🎨 Особенности UI/UX
+
+- **Native Telegram Look** - Использование CSS переменных `--tg-theme-*`
+- **Dark Mode** - Темная тема по умолчанию
+- **Glassmorphism** - Эффект стеклянного морфизма для карточек
+- **Smooth Animations** - Плавные переходы с Framer Motion
+- **Responsive Design** - Адаптивный дизайн для всех устройств
+
+## 📱 Экраны приложения
+
+### Home View
+- Горизонтальный скролл категорий
+- Сетка карточек услуг с ценами и рейтингом
+- Быстрый переход к бронированию
+
+### Booking Flow (4 шага)
+1. Выбор класса автомобиля
+2. Выбор даты (календарь)
+3. Выбор времени
+4. Контактные данные + подтверждение
+
+### Admin Dashboard
+- Доступен только для `ADMIN_ID`
+- **Работает внутри Mini App** - не нужно открывать Google Sheets
+- Статистика по статусам заказов
+- Фильтрация заказов по статусу
+- Управление заказами (смена статусов)
+- Автообновление каждые 30 секунд
+- **Deep links** - прямые ссылки из уведомлений бота
+- **Быстрые действия** - кнопки в уведомлениях для принятия/отклонения заказов
+
+### AI Assistant
+- Интерфейс чата
+- UI готов, логика в разработке
+- Заглушка с приветственным сообщением
+
+## 🔧 API Endpoints
+
+### Services
+- `GET /api/services` - Получить список услуг
+
+### Orders
+- `POST /api/orders` - Создать заказ
+- `GET /api/orders` - Получить все заказы
+- `PATCH /api/orders/:orderId` - Обновить статус заказа
+
+### Health
+- `GET /api/health` - Проверка работоспособности сервера
+
+## 🔐 Безопасность
+
+- Проверка Admin ID на клиенте и сервере
+- Валидация данных перед отправкой
+- Безопасное хранение токенов в `.env`
+- CORS настроен для безопасности
+
+## 📦 Кэширование
+
+Данные из Google Sheets кэшируются на **5 минут** для оптимизации:
+- Список услуг
+- Список заказов
+
+Кэш автоматически очищается при создании/обновлении данных.
+
+## 🤖 Telegram Bot уведомления
+
+Бот отправляет уведомления админу:
+- При создании нового заказа
+- При изменении статуса заказа
+
+## 📝 Статусы заказов
+
+- `new` 🆕 - Новый заказ
+- `in_progress` ⏳ - В работе
+- `completed` ✅ - Завершен
+
+## � Доступные скрипты
+
+### Разработка
+- `npm run dev` - Запуск frontend + backend одновременно (concurrently)
+- `npm run dev:client` - Только frontend (Vite dev server)
+- `npm run dev:server` - Только backend (Express + Nodemon)
+
+### Установка
+- `npm run install:all` - Установка зависимостей для frontend и backend
+
+### Сборка
+- `npm run build` - Сборка frontend в production
+- `npm run build:server` - Установка зависимостей backend
+
+### Production
+- `npm run preview` - Предпросмотр production сборки frontend
+- `npm run server` - Запуск backend в production режиме
+- `npm start` - Запуск frontend (preview) + backend одновременно
+
+## 🚀 Деплой
+
+### Вариант 1: Раздельный деплой (рекомендуется для масштабирования)
+
+**Frontend → Vercel/Netlify:**
+```bash
+# Vercel
+vercel --prod
+
+# Netlify
+netlify deploy --prod
+```
+
+**Backend → Railway/Render:**
+1. Подключите GitHub репозиторий
+2. Укажите Root Directory: `server`
+3. Build Command: `npm install`
+4. Start Command: `npm start`
+5. Добавьте Environment Variables
+
+**Преимущества:**
+- ✅ Независимое масштабирование
+- ✅ Frontend на CDN (быстрая загрузка)
+- ✅ Backend на отдельном сервере
+- ✅ Бесплатные tier на обеих платформах
+
+### Вариант 2: Monorepo деплой (один сервис)
+
+**Railway/Render (весь проект):**
+1. Root Directory: `/`
+2. Build Command: `npm run install:all && npm run build`
+3. Start Command: `npm start`
+
+**Преимущества:**
+- ✅ Проще настройка
+- ✅ Один URL
+- ✅ Нет CORS проблем
+
+### Настройка Environment Variables
+
+**Frontend (.env):**
+```env
+VITE_API_URL=https://your-backend.railway.app
+VITE_ADMIN_ID=your_telegram_id
+```
+
+**Backend (server/.env):**
+```env
+PORT=5000
+TELEGRAM_BOT_TOKEN=your_token
+ADMIN_ID=your_telegram_id
+GOOGLE_SHEET_ID=your_sheet_id
+GOOGLE_SERVICE_ACCOUNT_EMAIL=your_email
+GOOGLE_PRIVATE_KEY="your_private_key"
+```
+
+### Обновление Telegram Bot
+
+После деплоя обновите Web App URL в @BotFather:
+```
+/mybots → Выбрать бота → Bot Settings → Menu Button → Configure
+URL: https://your-frontend.vercel.app
+```
+
+## 📄 Лицензия
+
+MIT
