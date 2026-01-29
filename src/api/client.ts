@@ -16,8 +16,16 @@ export const api = {
   },
 
   createOrder: async (orderData: any) => {
-    const response = await apiClient.post('/api/orders', orderData)
-    return response.data
+    try {
+      console.log('Creating order with data:', orderData)
+      console.log('API URL:', API_URL)
+      const response = await apiClient.post('/api/orders', orderData)
+      console.log('Order created successfully:', response.data)
+      return response.data
+    } catch (error: any) {
+      console.error('Error creating order:', error.response?.data || error.message)
+      throw error
+    }
   },
 
   getOrders: async () => {

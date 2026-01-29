@@ -26,7 +26,10 @@ export default function BookingFlow() {
   const { bookingData, updateBookingData, resetBookingData, setCurrentView, user } = useAppStore()
 
   const handleNext = () => {
-    if (step < 4) setStep(step + 1)
+    if (step < 4) {
+      setStep(step + 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
 
   const handleBack = () => {
@@ -134,7 +137,7 @@ export default function BookingFlow() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 pb-24">
         <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div
@@ -149,7 +152,10 @@ export default function BookingFlow() {
                 <motion.button
                   key={carClass.id}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => updateBookingData({ carClass: carClass.name })}
+                  onClick={() => {
+                    updateBookingData({ carClass: carClass.name })
+                    setTimeout(() => handleNext(), 300)
+                  }}
                   className={`w-full glass-card p-4 text-left transition-all ${
                     bookingData.carClass === carClass.name
                       ? 'ring-2 ring-blue-500 bg-blue-500/10'
@@ -188,7 +194,10 @@ export default function BookingFlow() {
                 <DayPicker
                   mode="single"
                   selected={bookingData.date || undefined}
-                  onSelect={(date) => updateBookingData({ date: date || null })}
+                  onSelect={(date) => {
+                    updateBookingData({ date: date || null })
+                    if (date) setTimeout(() => handleNext(), 300)
+                  }}
                   disabled={{ before: new Date() }}
                   className="!bg-transparent"
                   classNames={{
@@ -217,7 +226,10 @@ export default function BookingFlow() {
                   <motion.button
                     key={time}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => updateBookingData({ time })}
+                    onClick={() => {
+                      updateBookingData({ time })
+                      setTimeout(() => handleNext(), 300)
+                    }}
                     className={`glass-card p-3 rounded-xl font-semibold transition-all ${
                       bookingData.time === time
                         ? 'ring-2 ring-blue-500 bg-blue-500/10'

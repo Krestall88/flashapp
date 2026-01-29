@@ -14,8 +14,10 @@ const PORT = process.env.PORT || 5000
 app.use(cors({
   origin: [
     'https://flashapp.vercel.app',
+    'https://telegram-detailing-app.vercel.app',
     'http://localhost:3000',
-    /\.ngrok-free\.dev$/
+    /\.ngrok-free\.dev$/,
+    /\.vercel\.app$/
   ],
   credentials: true
 }))
