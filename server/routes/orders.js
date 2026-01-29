@@ -11,11 +11,13 @@ export const ordersRouter = (bot) => {
 
       const adminId = process.env.ADMIN_ID
       if (adminId && bot) {
+        const telegramContact = order.userId ? `@${order.userId}` : 'не указан'
         const message = `
 🆕 Новый заказ #${order.id}
 
-👤 Клиент: ${order.userName}
-📞 Телефон: ${order.phone}
+👤 Клиент: ${order.userName || 'Не указано'}
+� Telegram: ${telegramContact}
+�📞 Телефон: ${order.phone || 'Не указан'}
 🚗 Услуга: ${order.service}
 🏎️ Класс: ${order.carClass}
 📅 Дата: ${order.date}

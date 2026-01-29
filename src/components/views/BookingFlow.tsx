@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react'
+import { ChevronLeft, Check } from 'lucide-react'
 import { useAppStore } from '../../store/appStore'
 import { DayPicker } from 'react-day-picker'
 import 'react-day-picker/dist/style.css'
@@ -41,8 +41,8 @@ export default function BookingFlow() {
     setIsSubmitting(true)
     try {
       const orderData = {
-        userId: user?.id,
-        userName: bookingData.contactName,
+        userId: user?.id || user?.username,
+        userName: bookingData.contactName || user?.firstName || user?.username || 'Не указано',
         service: bookingData.serviceName,
         carClass: bookingData.carClass,
         date: bookingData.date?.toLocaleDateString('ru-RU'),
@@ -72,7 +72,7 @@ export default function BookingFlow() {
       case 1: return bookingData.carClass !== ''
       case 2: return bookingData.date !== null
       case 3: return bookingData.time !== ''
-      case 4: return bookingData.contactName !== '' && bookingData.contactPhone !== ''
+      case 4: return bookingData.contactPhone !== '' && bookingData.contactPhone.length >= 10
       default: return false
     }
   }
@@ -255,7 +255,7 @@ export default function BookingFlow() {
               
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Ваше имя</label>
+                  <label className="block text-sm text-gray-400 mb-2">Ваше имя (необязательно)</label>
                   <input
                     type="text"
                     value={bookingData.contactName}
@@ -266,14 +266,20 @@ export default function BookingFlow() {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Телефон</label>
+                  <label className="block text-sm text-gray-400 mb-2">
+                    Телефон для связи <span className="text-red-400">*</span>
+                  </label>
                   <input
                     type="tel"
                     value={bookingData.contactPhone}
                     onChange={(e) => updateBookingData({ contactPhone: e.target.value })}
                     placeholder="+7 (999) 123-45-67"
+                    required
                     className="w-full glass-card p-3 rounded-xl bg-white/5 border border-white/10 focus:border-blue-500 focus:outline-none"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Укажите номер телефона или Telegram username для связи
+                  </p>
                 </div>
               </div>
 
@@ -305,12 +311,11 @@ export default function BookingFlow() {
         {step < 4 ? (
           <motion.button
             whileTap={{ scale: 0.98 }}
-            onClick={handleNext}
-            disabled={!canProceed()}
-            className="w-full bg-blue-500 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleBack}
+            className="w-full bg-gray-700 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
           >
-            Далее
-            <ChevronRight size={20} />
+            <ChevronLeft size={20} />
+            Назад
           </motion.button>
         ) : (
           <motion.button
