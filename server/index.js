@@ -7,6 +7,7 @@ import { ordersRouter } from './routes/orders.js'
 import { servicesRouter } from './routes/services.js'
 import { adminsRouter } from './routes/admins.js'
 import { galleryRouter } from './routes/gallery.js'
+import { clientsRouter } from './routes/clients.js'
 
 dotenv.config()
 
@@ -101,6 +102,7 @@ app.use('/api/orders', ordersRouter(bot))
 app.use('/api/services', servicesRouter)
 app.use('/api/admins', adminsRouter)
 app.use('/api/gallery', galleryRouter)
+app.use('/api/clients', clientsRouter)
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })

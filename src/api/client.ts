@@ -111,4 +111,14 @@ export const api = {
     const response = await apiClient.delete(`/api/gallery/${imageId}`)
     return response.data
   },
+
+  getClients: async () => {
+    const response = await apiClient.get('/api/clients')
+    return response.data
+  },
+
+  getClientOrders: async (userId: string) => {
+    const response = await apiClient.get(`/api/clients/${userId}/orders`)
+    return response.data
+  },
 }

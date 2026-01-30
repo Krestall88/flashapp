@@ -178,6 +178,81 @@ class SheetsService {
     }
   }
 
+  async getClients() {
+    const cacheKey = 'clients'
+    const cached = cache.get(cacheKey)
+    if (cached) {
+      console.log('📦 Returning cached clients:', cached.length)
+      return cached
+    }
+
+    try {
+      console.log('🔍 Loading clients from Google Sheets...')
+      const rows = await this.clientsSheet.getRows()
+      console.log('📊 Total rows in clients sheet:', rows.length)
+      
+      const clients = rows.map(row => ({
+        userId: row.get('userId'),
+        userName: row.get('userName'),
+        phone: row.get('phone'),
+        firstName: row.get('firstName'),
+        lastName: row.get('lastName'),
+        username: row.get('username'),
+        firstOrderDate: row.get('firstOrderDate'),
+        lastOrderDate: row.get('lastOrderDate'),
+        totalOrders: parseInt(row.get('totalOrders')) || 0,
+        totalSpent: parseFloat(row.get('totalSpent')) || 0
+      }))
+
+      console.log('✅ Loaded clients:', clients.length)
+      cache.set(cacheKey, clients)
+      return clients
+    } catch (error) {
+      console.error('❌ Failed to get clients:', error)
+      return []
+    }
+  }
+
+  async getOrdersByUserId(userId) {
+    try {
+      console.log(`🔍 Loading orders for user ${userId}...`)
+      const rows = await this.ordersSheet.getRows()
+      
+      const orders = rows
+        .filter(row => row.get('userId') === String(userId))
+        .map(row => {
+          let services = []
+          try {
+            services = JSON.parse(row.get('services'))
+          } catch (e) {
+            services = [{ serviceName: row.get('service'), price: parseFloat(row.get('price')) || 0 }]
+          }
+          
+          return {
+            id: row.get('id'),
+            userId: row.get('userId'),
+            userName: row.get('userName'),
+            services: services,
+            totalPrice: services.reduce((sum, s) => sum + (s.price || 0), 0),
+            carClass: row.get('carClass'),
+            date: row.get('date'),
+            time: row.get('time'),
+            phone: row.get('phone'),
+            price: parseFloat(row.get('price')) || 0,
+            status: row.get('status'),
+            createdAt: row.get('createdAt')
+          }
+        })
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
+      console.log(`✅ Found ${orders.length} orders for user ${userId}`)
+      return orders
+    } catch (error) {
+      console.error('❌ Failed to get orders by userId:', error)
+      return []
+    }
+  }
+
   async getOrders() {
     const cacheKey = 'orders'
     const cached = cache.get(cacheKey)

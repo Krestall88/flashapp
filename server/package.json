@@ -6,6 +6,10 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "seed:services": "node scripts/seed-services.js",
+    "seed:gallery": "node scripts/seed-gallery.js",
+    "update:prices": "node scripts/update-prices.js",
+    "populate:clients": "node scripts/populate-clients.js",
     "build": "echo 'No build step required for backend'"
   },
   "dependencies": {
