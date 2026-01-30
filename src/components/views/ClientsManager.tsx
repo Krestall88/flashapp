@@ -69,7 +69,8 @@ export default function ClientsManager() {
   }
 
   const handleOpenChat = (userId: string) => {
-    window.open(`https://t.me/${userId}`, '_blank')
+    // Используем tg://user?id= для открытия чата по userId
+    window.open(`tg://user?id=${userId}`, '_blank')
   }
 
   const getFilteredClients = () => {

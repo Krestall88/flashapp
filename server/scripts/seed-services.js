@@ -32,6 +32,14 @@ const seedServices = async () => {
       return
     }
 
+    // Обновляем заголовки
+    await servicesSheet.setHeaderRow([
+      'id', 'name', 'description', 'basePrice', 
+      'economyPrice', 'comfortPrice', 'businessPrice', 'premiumPrice',
+      'category', 'image', 'active'
+    ])
+    console.log('✅ Заголовки обновлены')
+
     // Очищаем существующие данные (кроме заголовков)
     const rows = await servicesSheet.getRows()
     console.log(`🗑️  Удаляем ${rows.length} существующих записей...`)

@@ -206,8 +206,9 @@ export default function AdminDashboard() {
                           </motion.button>
                           <motion.button
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => console.log('Open chat with client')}
+                            onClick={() => window.open(`tg://user?id=${order.userId}`, '_blank')}
                             className="bg-blue-500/20 text-blue-400 p-2 rounded-lg hover:bg-blue-500/30 transition-colors"
+                            title="Написать клиенту"
                           >
                             <MessageCircle size={16} />
                           </motion.button>
