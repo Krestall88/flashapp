@@ -72,23 +72,29 @@ const mockServices = [
 export default function HomeView() {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [galleryService, setGalleryService] = useState<typeof mockServices[0] | null>(null)
-  const { setCurrentView, setServices, updateBookingData, setSelectedService, user } = useAppStore()
+  const { setCurrentView, setServices, services, updateBookingData, setSelectedService, user } = useAppStore()
 
   useEffect(() => {
     const loadServices = async () => {
       try {
-        const services = await api.getServices()
-        setServices(services)
+        const servicesData = await api.getServices()
+        if (servicesData && servicesData.length > 0) {
+          setServices(servicesData)
+        } else {
+          setServices(mockServices)
+        }
       } catch (error) {
+        console.error('Failed to load services:', error)
         setServices(mockServices)
       }
     }
     loadServices()
   }, [setServices])
 
+  const displayServices = services.length > 0 ? services : mockServices
   const filteredServices = selectedCategory === 'all' 
-    ? mockServices 
-    : mockServices.filter(s => s.category === selectedCategory)
+    ? displayServices 
+    : displayServices.filter(s => s.category === selectedCategory)
 
   const handleServiceSelect = (service: typeof mockServices[0]) => {
     setSelectedService(service)

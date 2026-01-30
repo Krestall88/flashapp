@@ -46,10 +46,12 @@ export default function ServiceManager() {
     try {
       setIsLoading(true)
       const data = await api.getServices()
-      setServices(data)
+      console.log('ServiceManager: Loaded services:', data)
+      setServices(data || [])
     } catch (error) {
-      console.error('Failed to load services:', error)
+      console.error('ServiceManager: Failed to load services:', error)
       WebApp.showAlert('Ошибка загрузки услуг')
+      setServices([])
     } finally {
       setIsLoading(false)
     }

@@ -29,10 +29,13 @@ export default function Gallery({ serviceId, serviceName, onClose }: GalleryProp
   const loadGallery = async () => {
     try {
       setIsLoading(true)
+      console.log('Gallery: Loading images for serviceId:', serviceId)
       const data = await api.getGallery(serviceId)
-      setImages(data)
+      console.log('Gallery: Loaded images:', data)
+      setImages(data || [])
     } catch (error) {
-      console.error('Failed to load gallery:', error)
+      console.error('Gallery: Failed to load gallery:', error)
+      setImages([])
     } finally {
       setIsLoading(false)
     }
