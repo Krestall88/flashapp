@@ -41,4 +41,19 @@ export const api = {
     const response = await apiClient.patch(`/api/orders/${orderId}`, { status })
     return response.data
   },
+
+  getAdmins: async () => {
+    const response = await apiClient.get('/api/admins')
+    return response.data
+  },
+
+  addAdmin: async (userId: string, name: string) => {
+    const response = await apiClient.post('/api/admins', { userId, name })
+    return response.data
+  },
+
+  removeAdmin: async (userId: string) => {
+    const response = await apiClient.delete(`/api/admins/${userId}`)
+    return response.data
+  },
 }

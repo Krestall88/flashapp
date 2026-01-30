@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { useAppStore } from './store/appStore'
+import { api } from './api/client'
 import Layout from './components/Layout'
 import HomeView from './components/views/HomeView'
 import BookingFlow from './components/views/BookingFlow'
@@ -15,26 +16,43 @@ function App() {
     WebApp.ready()
     WebApp.expand()
     
-    const user = WebApp.initDataUnsafe?.user
-    const adminId = import.meta.env.VITE_ADMIN_ID
-    
-    if (user) {
-      setUser({
-        id: user.id,
-        firstName: user.first_name || '',
-        lastName: user.last_name || '',
-        username: user.username || '',
-      })
+    const initializeApp = async () => {
+      const user = WebApp.initDataUnsafe?.user
+      const adminId = import.meta.env.VITE_ADMIN_ID
       
-      if (adminId && user.id.toString() === adminId) {
-        setIsAdmin(true)
+      if (user) {
+        setUser({
+          id: user.id,
+          firstName: user.first_name || '',
+          lastName: user.last_name || '',
+          username: user.username || '',
+        })
         
-        const startParam = WebApp.initDataUnsafe?.start_param
-        if (startParam === 'admin') {
-          setCurrentView('admin')
+        // Проверяем админа из env
+        let isUserAdmin = adminId && user.id.toString() === adminId
+        
+        // Проверяем админа из Google Sheets
+        if (!isUserAdmin) {
+          try {
+            const admins = await api.getAdmins()
+            isUserAdmin = admins.some((admin: any) => admin.userId === user.id.toString())
+          } catch (error) {
+            console.error('Failed to load admins:', error)
+          }
+        }
+        
+        if (isUserAdmin) {
+          setIsAdmin(true)
+          
+          const startParam = WebApp.initDataUnsafe?.start_param
+          if (startParam === 'admin') {
+            setCurrentView('admin')
+          }
         }
       }
     }
+    
+    initializeApp()
 
     WebApp.setHeaderColor('#000000')
     WebApp.setBackgroundColor('#000000')

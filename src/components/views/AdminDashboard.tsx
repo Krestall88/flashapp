@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { RefreshCw, Clock, CheckCircle, AlertCircle } from 'lucide-react'
+import { RefreshCw, Clock, CheckCircle, AlertCircle, Users } from 'lucide-react'
 import { useAppStore } from '../../store/appStore'
 import { api } from '../../api/client'
+import AdminManagement from './AdminManagement'
 
 const statusConfig = {
   new: { label: 'Новый', color: 'bg-blue-500', icon: AlertCircle },
@@ -14,6 +15,7 @@ export default function AdminDashboard() {
   const { orders, setOrders, updateOrderStatus } = useAppStore()
   const [isLoading, setIsLoading] = useState(false)
   const [filterStatus, setFilterStatus] = useState<'all' | 'new' | 'in_progress' | 'completed'>('all')
+  const [activeTab, setActiveTab] = useState<'orders' | 'admins'>('orders')
 
   const loadOrders = async () => {
     setIsLoading(true)
@@ -49,21 +51,57 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="p-4 space-y-4 pb-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Панель администратора</h1>
-          <p className="text-gray-400 text-sm">Управление заказами</p>
+          <p className="text-gray-400 text-sm">
+            {activeTab === 'orders' ? 'Управление заказами' : 'Управление админами'}
+          </p>
         </div>
+        {activeTab === 'orders' && (
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={loadOrders}
+            disabled={isLoading}
+            className="p-3 glass-card rounded-xl"
+          >
+            <RefreshCw size={20} className={isLoading ? 'animate-spin' : ''} />
+          </motion.button>
+        )}
+      </div>
+
+      {/* Вкладки */}
+      <div className="flex gap-2">
         <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={loadOrders}
-          disabled={isLoading}
-          className="p-3 glass-card rounded-xl"
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setActiveTab('orders')}
+          className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
+            activeTab === 'orders'
+              ? 'bg-blue-500 text-white'
+              : 'glass-card text-gray-400'
+          }`}
         >
-          <RefreshCw size={20} className={isLoading ? 'animate-spin' : ''} />
+          Заказы
+        </motion.button>
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setActiveTab('admins')}
+          className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
+            activeTab === 'admins'
+              ? 'bg-blue-500 text-white'
+              : 'glass-card text-gray-400'
+          }`}
+        >
+          <Users size={18} />
+          Админы
         </motion.button>
       </div>
+
+      {activeTab === 'admins' ? (
+        <AdminManagement />
+      ) : (
+        <div className="space-y-4">
 
       <div className="grid grid-cols-3 gap-3">
         {Object.entries(statusConfig).map(([status, config]) => {
@@ -161,6 +199,8 @@ export default function AdminDashboard() {
           })
         )}
       </div>
+      </div>
+      )}
     </div>
   )
 }

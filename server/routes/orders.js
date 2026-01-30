@@ -11,13 +11,14 @@ export const ordersRouter = (bot) => {
 
       const adminId = process.env.ADMIN_ID
       if (adminId && bot) {
-        const telegramContact = order.userId ? `@${order.userId}` : 'не указан'
+        const userLink = order.userId ? `tg://user?id=${order.userId}` : 'не указан'
+        const userDisplay = order.userId ? `[Открыть профиль](${userLink})` : 'не указан'
         const message = `
 🆕 Новый заказ #${order.id}
 
 👤 Клиент: ${order.userName || 'Не указано'}
-� Telegram: ${telegramContact}
-�📞 Телефон: ${order.phone || 'Не указан'}
+📱 Telegram: ${userDisplay}
+📞 Телефон: ${order.phone || 'Не указан'}
 🚗 Услуга: ${order.service}
 🏎️ Класс: ${order.carClass}
 📅 Дата: ${order.date}
@@ -26,14 +27,18 @@ export const ordersRouter = (bot) => {
 👉 Открыть админку для управления заказом
         `.trim()
 
+        const webAppUrl = process.env.WEB_APP_URL || 'https://your-app.vercel.app'
+        const adminUrl = `${webAppUrl}?tgWebAppStartParam=admin`
+
         try {
           await bot.telegram.sendMessage(adminId, message, {
+            parse_mode: 'Markdown',
             reply_markup: {
               inline_keyboard: [
                 [
                   {
                     text: '📊 Открыть админку',
-                    web_app: { url: process.env.WEB_APP_URL || 'https://your-app.vercel.app' }
+                    web_app: { url: adminUrl }
                   }
                 ],
                 [
@@ -92,6 +97,9 @@ export const ordersRouter = (bot) => {
         }
         const message = `${statusEmoji[status] || '📝'} Заказ #${orderId}\nСтатус изменен на: ${statusText[status] || status}`
         
+        const webAppUrl = process.env.WEB_APP_URL || 'https://your-app.vercel.app'
+        const adminUrl = `${webAppUrl}?tgWebAppStartParam=admin`
+        
         try {
           await bot.telegram.sendMessage(adminId, message, {
             reply_markup: {
@@ -99,7 +107,7 @@ export const ordersRouter = (bot) => {
                 [
                   {
                     text: '📊 Открыть админку',
-                    web_app: { url: process.env.WEB_APP_URL || 'https://your-app.vercel.app' }
+                    web_app: { url: adminUrl }
                   }
                 ]
               ]

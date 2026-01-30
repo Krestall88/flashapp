@@ -13,6 +13,7 @@ class SheetsService {
     this.servicesSheet = null
     this.ordersSheet = null
     this.settingsSheet = null
+    this.adminsSheet = null
   }
 
   async initialize() {
@@ -39,6 +40,11 @@ class SheetsService {
       this.settingsSheet = this.doc.sheetsByTitle['settings'] || await this.doc.addSheet({ 
         title: 'settings',
         headerValues: ['key', 'value']
+      })
+
+      this.adminsSheet = this.doc.sheetsByTitle['admins'] || await this.doc.addSheet({ 
+        title: 'admins',
+        headerValues: ['userId', 'name', 'addedAt']
       })
 
       console.log('📊 Google Sheets connected:', this.doc.title)
@@ -149,6 +155,65 @@ class SheetsService {
       return { id: orderId, status: newStatus }
     } catch (error) {
       console.error('Failed to update order status:', error)
+      throw error
+    }
+  }
+
+  async getAdmins() {
+    const cacheKey = 'admins'
+    const cached = cache.get(cacheKey)
+    
+    if (cached) {
+      return cached
+    }
+
+    try {
+      const rows = await this.adminsSheet.getRows()
+      const admins = rows.map(row => ({
+        userId: row.get('userId'),
+        name: row.get('name') || '',
+        addedAt: row.get('addedAt') || ''
+      }))
+      
+      cache.set(cacheKey, admins)
+      return admins
+    } catch (error) {
+      console.error('Failed to get admins:', error)
+      return []
+    }
+  }
+
+  async addAdmin(userId, name = '') {
+    try {
+      await this.adminsSheet.addRow({
+        userId: userId.toString(),
+        name,
+        addedAt: new Date().toISOString()
+      })
+      
+      cache.del('admins')
+      return { userId, name, addedAt: new Date().toISOString() }
+    } catch (error) {
+      console.error('Failed to add admin:', error)
+      throw error
+    }
+  }
+
+  async removeAdmin(userId) {
+    try {
+      const rows = await this.adminsSheet.getRows()
+      const adminRow = rows.find(row => row.get('userId') === userId.toString())
+      
+      if (!adminRow) {
+        throw new Error('Admin not found')
+      }
+
+      await adminRow.delete()
+      cache.del('admins')
+      
+      return { userId }
+    } catch (error) {
+      console.error('Failed to remove admin:', error)
       throw error
     }
   }

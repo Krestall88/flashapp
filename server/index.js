@@ -5,6 +5,7 @@ import { Telegraf } from 'telegraf'
 import { sheetsService } from './services/sheetsService.js'
 import { ordersRouter } from './routes/orders.js'
 import { servicesRouter } from './routes/services.js'
+import { adminsRouter } from './routes/admins.js'
 
 dotenv.config()
 
@@ -27,6 +28,7 @@ const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN)
 
 bot.start((ctx) => {
   const webAppUrl = process.env.WEB_APP_URL || 'https://your-app.vercel.app'
+  const adminUrl = `${webAppUrl}?tgWebAppStartParam=admin`
   ctx.reply('Добро пожаловать в бот детейлинга и аренды! 🚗', {
     reply_markup: {
       inline_keyboard: [
@@ -39,7 +41,7 @@ bot.start((ctx) => {
         [
           {
             text: '📊 Админка',
-            web_app: { url: webAppUrl }
+            web_app: { url: adminUrl }
           }
         ]
       ]
@@ -63,7 +65,7 @@ bot.action(/accept_(.+)/, async (ctx) => {
         [
           {
             text: '📊 Открыть админку',
-            web_app: { url: process.env.WEB_APP_URL || 'https://your-app.vercel.app' }
+            web_app: { url: `${process.env.WEB_APP_URL || 'https://your-app.vercel.app'}?tgWebAppStartParam=admin` }
           }
         ]
       ]
@@ -96,6 +98,7 @@ bot.launch().then(() => {
 
 app.use('/api/orders', ordersRouter(bot))
 app.use('/api/services', servicesRouter)
+app.use('/api/admins', adminsRouter)
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
