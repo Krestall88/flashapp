@@ -10,6 +10,8 @@
     "seed:gallery": "node scripts/seed-gallery.js",
     "update:prices": "node scripts/update-prices.js",
     "populate:clients": "node scripts/populate-clients.js",
+    "update:orders": "node scripts/update-orders-structure.js",
+    "test:order": "node scripts/create-test-order.js",
     "build": "echo 'No build step required for backend'"
   },
   "dependencies": {
