@@ -101,7 +101,7 @@ class SheetsService {
         id: orderId,
         userId: orderData.userId || '',
         userName: orderData.userName,
-        service: orderData.service,
+        services: JSON.stringify(orderData.services || [{ serviceId: orderData.serviceId, serviceName: orderData.service, price: orderData.price }]),
         carClass: orderData.carClass,
         date: orderData.date,
         time: orderData.time,
@@ -130,18 +130,33 @@ class SheetsService {
     try {
       const rows = await this.ordersSheet.getRows()
       
-      const orders = rows.map(row => ({
-        id: row.get('id'),
-        userId: row.get('userId'),
-        userName: row.get('userName'),
-        service: row.get('service'),
-        carClass: row.get('carClass'),
-        date: row.get('date'),
-        time: row.get('time'),
-        phone: row.get('phone'),
-        status: row.get('status'),
-        createdAt: row.get('createdAt'),
-      }))
+      const orders = rows.map(row => {
+        let services = []
+        try {
+          services = JSON.parse(row.get('services') || '[]')
+        } catch (e) {
+          // Fallback для старых заказов с одной услугой
+          const serviceName = row.get('service')
+          if (serviceName) {
+            services = [{ serviceId: '', serviceName, price: parseFloat(row.get('price')) || 0 }]
+          }
+        }
+
+        return {
+          id: row.get('id'),
+          userId: row.get('userId'),
+          userName: row.get('userName'),
+          services,
+          service: services.length > 0 ? services.map(s => s.serviceName).join(', ') : '',
+          carClass: row.get('carClass'),
+          date: row.get('date'),
+          time: row.get('time'),
+          phone: row.get('phone'),
+          price: parseFloat(row.get('price')) || 0,
+          status: row.get('status'),
+          createdAt: row.get('createdAt'),
+        }
+      })
 
       cache.set(cacheKey, orders)
       return orders
@@ -168,6 +183,54 @@ class SheetsService {
       return { id: orderId, status: newStatus }
     } catch (error) {
       console.error('Failed to update order status:', error)
+      throw error
+    }
+  }
+
+  async updateOrder(orderId, orderData) {
+    try {
+      const rows = await this.ordersSheet.getRows()
+      const orderRow = rows.find(row => row.get('id') === orderId)
+      
+      if (!orderRow) {
+        throw new Error('Order not found')
+      }
+
+      if (orderData.services) {
+        orderRow.set('services', JSON.stringify(orderData.services))
+      }
+      if (orderData.carClass) orderRow.set('carClass', orderData.carClass)
+      if (orderData.date) orderRow.set('date', orderData.date)
+      if (orderData.time) orderRow.set('time', orderData.time)
+      if (orderData.phone) orderRow.set('phone', orderData.phone)
+      if (orderData.price !== undefined) orderRow.set('price', orderData.price.toString())
+      if (orderData.status) orderRow.set('status', orderData.status)
+      
+      await orderRow.save()
+      cache.del('orders')
+      
+      return { id: orderId, ...orderData }
+    } catch (error) {
+      console.error('Failed to update order:', error)
+      throw error
+    }
+  }
+
+  async deleteOrder(orderId) {
+    try {
+      const rows = await this.ordersSheet.getRows()
+      const orderRow = rows.find(row => row.get('id') === orderId)
+      
+      if (!orderRow) {
+        throw new Error('Order not found')
+      }
+
+      await orderRow.delete()
+      cache.del('orders')
+      
+      return { id: orderId }
+    } catch (error) {
+      console.error('Failed to delete order:', error)
       throw error
     }
   }

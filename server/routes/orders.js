@@ -77,6 +77,76 @@ export const ordersRouter = (bot) => {
     }
   })
 
+  router.patch('/:orderId/status', async (req, res) => {
+    try {
+      const { orderId } = req.params
+      const { status } = req.body
+
+      const result = await sheetsService.updateOrderStatus(orderId, status)
+      
+      // Отправляем уведомление клиенту
+      const orders = await sheetsService.getOrders()
+      const order = orders.find(o => o.id === orderId)
+      
+      if (order && order.userId) {
+        const statusText = {
+          'new': 'принят',
+          'in_progress': 'в работе',
+          'completed': 'завершен'
+        }[status]
+
+        try {
+          await bot.telegram.sendMessage(
+            order.userId,
+            `🔔 Статус вашего заказа изменен\n\n` +
+            `Услуга: ${order.service}\n` +
+            `Статус: ${statusText}\n` +
+            `Дата: ${order.date}\n` +
+            `Время: ${order.time}`,
+            {
+              reply_markup: {
+                inline_keyboard: [[
+                  { text: '📱 Открыть приложение', web_app: { url: `${process.env.WEB_APP_URL}?startapp=orders` } }
+                ]]
+              }
+            }
+          )
+        } catch (error) {
+          console.error('Failed to send notification to client:', error)
+        }
+      }
+
+      res.json(result)
+    } catch (error) {
+      console.error('Error updating order status:', error)
+      res.status(500).json({ error: 'Failed to update order status' })
+    }
+  })
+
+  router.patch('/:orderId', async (req, res) => {
+    try {
+      const { orderId } = req.params
+      const orderData = req.body
+
+      const result = await sheetsService.updateOrder(orderId, orderData)
+      res.json(result)
+    } catch (error) {
+      console.error('Error updating order:', error)
+      res.status(500).json({ error: 'Failed to update order' })
+    }
+  })
+
+  router.delete('/:orderId', async (req, res) => {
+    try {
+      const { orderId } = req.params
+      const result = await sheetsService.deleteOrder(orderId)
+      res.json(result)
+    } catch (error) {
+      console.error('Error deleting order:', error)
+      res.status(500).json({ error: 'Failed to delete order' })
+    }
+  })
+
   router.patch('/:orderId', async (req, res) => {
     try {
       const { orderId } = req.params

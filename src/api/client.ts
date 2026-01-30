@@ -48,7 +48,17 @@ export const api = {
   },
 
   updateOrderStatus: async (orderId: string, status: string) => {
-    const response = await apiClient.patch(`/api/orders/${orderId}`, { status })
+    const response = await apiClient.patch(`/api/orders/${orderId}/status`, { status })
+    return response.data
+  },
+
+  updateOrder: async (orderId: string, orderData: any) => {
+    const response = await apiClient.patch(`/api/orders/${orderId}`, orderData)
+    return response.data
+  },
+
+  deleteOrder: async (orderId: string) => {
+    const response = await apiClient.delete(`/api/orders/${orderId}`)
     return response.data
   },
 

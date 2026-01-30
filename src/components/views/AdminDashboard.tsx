@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import { RefreshCw, Clock, CheckCircle, AlertCircle, Users } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { RefreshCw, Clock, CheckCircle, AlertCircle, Users, Edit, Trash2 } from 'lucide-react'
 import { useAppStore } from '../../store/appStore'
 import { api } from '../../api/client'
 import AdminManagement from './AdminManagement'
 import ServiceManager from './ServiceManager'
+import OrderEditor from './OrderEditor'
 
 const statusConfig = {
   new: { label: 'Новый', color: 'bg-blue-500', icon: AlertCircle },
@@ -17,6 +18,7 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(false)
   const [filterStatus, setFilterStatus] = useState<'all' | 'new' | 'in_progress' | 'completed'>('all')
   const [activeTab, setActiveTab] = useState<'orders' | 'admins' | 'services'>('orders')
+  const [editingOrder, setEditingOrder] = useState<any>(null)
 
   const loadOrders = async () => {
     setIsLoading(true)
@@ -49,6 +51,17 @@ export default function AdminDashboard() {
     if (currentStatus === 'new') return 'in_progress'
     if (currentStatus === 'in_progress') return 'completed'
     return 'new'
+  }
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!confirm('Удалить этот заказ?')) return
+
+    try {
+      await api.deleteOrder(orderId)
+      loadOrders()
+    } catch (error) {
+      console.error('Failed to delete order:', error)
+    }
   }
 
   return (
@@ -170,13 +183,22 @@ export default function AdminDashboard() {
                 className="glass-card p-4 rounded-xl"
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold">{order.service}</h3>
+                  <div className="flex-1">
+                    <h3 className="font-semibold">
+                      {order.services && order.services.length > 0 
+                        ? order.services.map((s: any) => s.serviceName).join(', ')
+                        : order.service}
+                    </h3>
                     <p className="text-sm text-gray-400">{order.userName}</p>
+                    {order.price > 0 && (
+                      <p className="text-lg font-bold text-blue-400 mt-1">{order.price.toLocaleString()} ₽</p>
+                    )}
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${config.color}`}>
-                    <StatusIcon size={12} />
-                    {config.label}
+                  <div className="flex items-center gap-2">
+                    <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${config.color}`}>
+                      <StatusIcon size={12} />
+                      {config.label}
+                    </div>
                   </div>
                 </div>
 
@@ -199,15 +221,32 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                {order.status !== 'completed' && (
+                <div className="flex gap-2">
                   <motion.button
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => handleStatusChange(order.id, getNextStatus(order.status) as any)}
-                    className="w-full bg-blue-500/20 text-blue-400 py-2 rounded-lg text-sm font-medium hover:bg-blue-500/30 transition-colors"
+                    onClick={() => setEditingOrder(order)}
+                    className="flex-1 bg-white/10 text-white py-2 rounded-lg text-sm font-medium hover:bg-white/20 transition-colors flex items-center justify-center gap-2"
                   >
-                    {order.status === 'new' ? 'Начать работу' : 'Завершить'}
+                    <Edit size={16} />
+                    Редактировать
                   </motion.button>
-                )}
+                  {order.status !== 'completed' && (
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleStatusChange(order.id, getNextStatus(order.status) as any)}
+                      className="flex-1 bg-blue-500/20 text-blue-400 py-2 rounded-lg text-sm font-medium hover:bg-blue-500/30 transition-colors"
+                    >
+                      {order.status === 'new' ? 'Начать работу' : 'Завершить'}
+                    </motion.button>
+                  )}
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleDeleteOrder(order.id)}
+                    className="bg-red-500/20 text-red-400 p-2 rounded-lg hover:bg-red-500/30 transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </motion.button>
+                </div>
               </motion.div>
             )
           })
@@ -215,6 +254,17 @@ export default function AdminDashboard() {
       </div>
       </div>
       )}
+
+      {/* Order Editor Modal */}
+      <AnimatePresence>
+        {editingOrder && (
+          <OrderEditor
+            order={editingOrder}
+            onClose={() => setEditingOrder(null)}
+            onSave={loadOrders}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

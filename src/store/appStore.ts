@@ -24,26 +24,33 @@ interface Service {
   image: string
 }
 
-interface BookingData {
+interface ServiceItem {
   serviceId: string
   serviceName: string
+  price: number
+}
+
+interface BookingData {
+  services: ServiceItem[]
   carClass: string
   date: Date | null
   time: string
   contactName: string
   contactPhone: string
-  price: number
+  totalPrice: number
 }
 
 interface Order {
   id: string
   userId: number
   userName: string
-  service: string
+  services: ServiceItem[]
+  service?: string
   carClass: string
   date: string
   time: string
   phone: string
+  price: number
   status: 'new' | 'in_progress' | 'completed'
   createdAt: string
 }
@@ -68,14 +75,13 @@ interface AppState {
 }
 
 const initialBookingData: BookingData = {
-  serviceId: '',
-  serviceName: '',
+  services: [],
   carClass: '',
   date: null,
   time: '',
   contactName: '',
   contactPhone: '',
-  price: 0,
+  totalPrice: 0,
 }
 
 export const useAppStore = create<AppState>((set) => ({

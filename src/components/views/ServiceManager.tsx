@@ -185,7 +185,15 @@ export default function ServiceManager() {
       </div>
 
       <div className="space-y-3">
-        {services.map((service) => (
+        {services.length === 0 && !isLoading ? (
+          <div className="glass-card p-8 text-center">
+            <p className="text-gray-400 mb-4">Услуги пока не добавлены</p>
+            <p className="text-sm text-gray-500">
+              Нажмите "Добавить услугу" чтобы создать первую услугу
+            </p>
+          </div>
+        ) : (
+          services.map((service) => (
           <motion.div
             key={service.id}
             initial={{ opacity: 0, y: 20 }}
@@ -251,7 +259,8 @@ export default function ServiceManager() {
               </div>
             </div>
           </motion.div>
-        ))}
+          ))
+        )}
       </div>
 
       {/* Edit/Create Service Modal */}

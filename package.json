@@ -13,8 +13,8 @@
     "install:all": "npm install && cd server && npm install",
     "start": "concurrently \"npm run preview\" \"npm run server\" --names \"CLIENT,SERVER\" --prefix-colors \"cyan,magenta\"",
     "server": "cd server && npm start",
-    "seed:services": "node scripts/seed-services.js",
-    "seed:gallery": "node scripts/seed-gallery.js",
+    "seed:services": "cd server && node scripts/seed-services.js",
+    "seed:gallery": "cd server && node scripts/seed-gallery.js",
     "seed:all": "npm run seed:services && npm run seed:gallery"
   },
   "dependencies": {
