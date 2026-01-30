@@ -14,6 +14,7 @@ class SheetsService {
     this.ordersSheet = null
     this.settingsSheet = null
     this.adminsSheet = null
+    this.gallerySheet = null
   }
 
   async initialize() {
@@ -29,12 +30,12 @@ class SheetsService {
 
       this.servicesSheet = this.doc.sheetsByTitle['services'] || await this.doc.addSheet({ 
         title: 'services',
-        headerValues: ['id', 'name', 'description', 'price', 'category', 'image', 'active']
+        headerValues: ['id', 'name', 'description', 'basePrice', 'economyPrice', 'comfortPrice', 'businessPrice', 'premiumPrice', 'category', 'image', 'active']
       })
 
       this.ordersSheet = this.doc.sheetsByTitle['orders'] || await this.doc.addSheet({ 
         title: 'orders',
-        headerValues: ['id', 'userId', 'userName', 'service', 'carClass', 'date', 'time', 'phone', 'status', 'createdAt']
+        headerValues: ['id', 'userId', 'userName', 'service', 'carClass', 'date', 'time', 'phone', 'price', 'status', 'createdAt']
       })
 
       this.settingsSheet = this.doc.sheetsByTitle['settings'] || await this.doc.addSheet({ 
@@ -45,6 +46,11 @@ class SheetsService {
       this.adminsSheet = this.doc.sheetsByTitle['admins'] || await this.doc.addSheet({ 
         title: 'admins',
         headerValues: ['userId', 'name', 'addedAt']
+      })
+
+      this.gallerySheet = this.doc.sheetsByTitle['gallery'] || await this.doc.addSheet({ 
+        title: 'gallery',
+        headerValues: ['id', 'serviceId', 'imageUrl', 'description', 'order']
       })
 
       console.log('📊 Google Sheets connected:', this.doc.title)
@@ -69,7 +75,13 @@ class SheetsService {
           id: row.get('id'),
           name: row.get('name'),
           description: row.get('description'),
-          price: parseFloat(row.get('price')),
+          basePrice: parseFloat(row.get('basePrice')) || 0,
+          prices: {
+            economy: parseFloat(row.get('economyPrice')) || parseFloat(row.get('basePrice')) || 0,
+            comfort: parseFloat(row.get('comfortPrice')) || parseFloat(row.get('basePrice')) * 1.3 || 0,
+            business: parseFloat(row.get('businessPrice')) || parseFloat(row.get('basePrice')) * 1.6 || 0,
+            premium: parseFloat(row.get('premiumPrice')) || parseFloat(row.get('basePrice')) * 2 || 0,
+          },
           category: row.get('category'),
           image: row.get('image'),
         }))
@@ -94,6 +106,7 @@ class SheetsService {
         date: orderData.date,
         time: orderData.time,
         phone: orderData.phone,
+        price: orderData.price || 0,
         status: 'new',
         createdAt: new Date().toISOString(),
       }
@@ -214,6 +227,166 @@ class SheetsService {
       return { userId }
     } catch (error) {
       console.error('Failed to remove admin:', error)
+      throw error
+    }
+  }
+
+  async getGallery(serviceId = null) {
+    const cacheKey = serviceId ? `gallery_${serviceId}` : 'gallery_all'
+    const cached = cache.get(cacheKey)
+    
+    if (cached) {
+      return cached
+    }
+
+    try {
+      const rows = await this.gallerySheet.getRows()
+      let gallery = rows.map(row => ({
+        id: row.get('id'),
+        serviceId: row.get('serviceId'),
+        imageUrl: row.get('imageUrl'),
+        description: row.get('description') || '',
+        order: parseInt(row.get('order')) || 0
+      }))
+
+      if (serviceId) {
+        gallery = gallery.filter(item => item.serviceId === serviceId)
+      }
+
+      gallery.sort((a, b) => a.order - b.order)
+      
+      cache.set(cacheKey, gallery)
+      return gallery
+    } catch (error) {
+      console.error('Failed to get gallery:', error)
+      return []
+    }
+  }
+
+  async addGalleryImage(serviceId, imageUrl, description = '', order = 0) {
+    try {
+      const id = `IMG-${Date.now()}`
+      await this.gallerySheet.addRow({
+        id,
+        serviceId,
+        imageUrl,
+        description,
+        order: order.toString()
+      })
+      
+      cache.del('gallery_all')
+      cache.del(`gallery_${serviceId}`)
+      
+      return { id, serviceId, imageUrl, description, order }
+    } catch (error) {
+      console.error('Failed to add gallery image:', error)
+      throw error
+    }
+  }
+
+  async removeGalleryImage(imageId) {
+    try {
+      const rows = await this.gallerySheet.getRows()
+      const imageRow = rows.find(row => row.get('id') === imageId)
+      
+      if (!imageRow) {
+        throw new Error('Image not found')
+      }
+
+      const serviceId = imageRow.get('serviceId')
+      await imageRow.delete()
+      
+      cache.del('gallery_all')
+      cache.del(`gallery_${serviceId}`)
+      
+      return { id: imageId }
+    } catch (error) {
+      console.error('Failed to remove gallery image:', error)
+      throw error
+    }
+  }
+
+  async createOrUpdateService(serviceData) {
+    try {
+      const rows = await this.servicesSheet.getRows()
+      
+      if (serviceData.id) {
+        // Обновление существующей услуги
+        const serviceRow = rows.find(row => row.get('id') === serviceData.id)
+        
+        if (!serviceRow) {
+          throw new Error('Service not found')
+        }
+
+        serviceRow.set('name', serviceData.name)
+        serviceRow.set('description', serviceData.description)
+        serviceRow.set('basePrice', serviceData.basePrice.toString())
+        serviceRow.set('economyPrice', serviceData.prices.economy.toString())
+        serviceRow.set('comfortPrice', serviceData.prices.comfort.toString())
+        serviceRow.set('businessPrice', serviceData.prices.business.toString())
+        serviceRow.set('premiumPrice', serviceData.prices.premium.toString())
+        serviceRow.set('category', serviceData.category)
+        serviceRow.set('image', serviceData.image)
+        serviceRow.set('active', serviceData.active ? 'true' : 'false')
+        
+        await serviceRow.save()
+        cache.del('services')
+        
+        return serviceData
+      } else {
+        // Создание новой услуги
+        const newId = `SRV-${Date.now()}`
+        const newService = {
+          id: newId,
+          name: serviceData.name,
+          description: serviceData.description,
+          basePrice: serviceData.basePrice.toString(),
+          economyPrice: serviceData.prices.economy.toString(),
+          comfortPrice: serviceData.prices.comfort.toString(),
+          businessPrice: serviceData.prices.business.toString(),
+          premiumPrice: serviceData.prices.premium.toString(),
+          category: serviceData.category,
+          image: serviceData.image,
+          active: 'true'
+        }
+        
+        await this.servicesSheet.addRow(newService)
+        cache.del('services')
+        
+        return { ...serviceData, id: newId }
+      }
+    } catch (error) {
+      console.error('Failed to create/update service:', error)
+      throw error
+    }
+  }
+
+  async deleteService(serviceId) {
+    try {
+      const rows = await this.servicesSheet.getRows()
+      const serviceRow = rows.find(row => row.get('id') === serviceId)
+      
+      if (!serviceRow) {
+        throw new Error('Service not found')
+      }
+
+      await serviceRow.delete()
+      cache.del('services')
+      
+      // Также удаляем все фото этой услуги
+      const galleryRows = await this.gallerySheet.getRows()
+      const serviceImages = galleryRows.filter(row => row.get('serviceId') === serviceId)
+      
+      for (const imageRow of serviceImages) {
+        await imageRow.delete()
+      }
+      
+      cache.del('gallery_all')
+      cache.del(`gallery_${serviceId}`)
+      
+      return { id: serviceId }
+    } catch (error) {
+      console.error('Failed to delete service:', error)
       throw error
     }
   }

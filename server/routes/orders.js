@@ -13,6 +13,7 @@ export const ordersRouter = (bot) => {
       if (adminId && bot) {
         const userLink = order.userId ? `tg://user?id=${order.userId}` : 'не указан'
         const userDisplay = order.userId ? `[Открыть профиль](${userLink})` : 'не указан'
+        const priceText = order.price > 0 ? `\n💰 Цена: ${order.price.toLocaleString()} ₽` : ''
         const message = `
 🆕 Новый заказ #${order.id}
 
@@ -22,7 +23,7 @@ export const ordersRouter = (bot) => {
 🚗 Услуга: ${order.service}
 🏎️ Класс: ${order.carClass}
 📅 Дата: ${order.date}
-⏰ Время: ${order.time}
+⏰ Время: ${order.time}${priceText}
 
 👉 Открыть админку для управления заказом
         `.trim()

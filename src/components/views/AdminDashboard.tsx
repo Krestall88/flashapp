@@ -4,6 +4,7 @@ import { RefreshCw, Clock, CheckCircle, AlertCircle, Users } from 'lucide-react'
 import { useAppStore } from '../../store/appStore'
 import { api } from '../../api/client'
 import AdminManagement from './AdminManagement'
+import ServiceManager from './ServiceManager'
 
 const statusConfig = {
   new: { label: 'Новый', color: 'bg-blue-500', icon: AlertCircle },
@@ -15,7 +16,7 @@ export default function AdminDashboard() {
   const { orders, setOrders, updateOrderStatus } = useAppStore()
   const [isLoading, setIsLoading] = useState(false)
   const [filterStatus, setFilterStatus] = useState<'all' | 'new' | 'in_progress' | 'completed'>('all')
-  const [activeTab, setActiveTab] = useState<'orders' | 'admins'>('orders')
+  const [activeTab, setActiveTab] = useState<'orders' | 'admins' | 'services'>('orders')
 
   const loadOrders = async () => {
     setIsLoading(true)
@@ -56,7 +57,7 @@ export default function AdminDashboard() {
         <div>
           <h1 className="text-2xl font-bold">Панель администратора</h1>
           <p className="text-gray-400 text-sm">
-            {activeTab === 'orders' ? 'Управление заказами' : 'Управление админами'}
+            {activeTab === 'orders' ? 'Управление заказами' : activeTab === 'services' ? 'Управление услугами' : 'Управление админами'}
           </p>
         </div>
         {activeTab === 'orders' && (
@@ -86,6 +87,17 @@ export default function AdminDashboard() {
         </motion.button>
         <motion.button
           whileTap={{ scale: 0.95 }}
+          onClick={() => setActiveTab('services')}
+          className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
+            activeTab === 'services'
+              ? 'bg-blue-500 text-white'
+              : 'glass-card text-gray-400'
+          }`}
+        >
+          Услуги
+        </motion.button>
+        <motion.button
+          whileTap={{ scale: 0.95 }}
           onClick={() => setActiveTab('admins')}
           className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
             activeTab === 'admins'
@@ -100,6 +112,8 @@ export default function AdminDashboard() {
 
       {activeTab === 'admins' ? (
         <AdminManagement />
+      ) : activeTab === 'services' ? (
+        <ServiceManager />
       ) : (
         <div className="space-y-4">
 

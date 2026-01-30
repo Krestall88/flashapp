@@ -23,7 +23,7 @@ export default function BookingFlow() {
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderSuccess, setOrderSuccess] = useState(false)
-  const { bookingData, updateBookingData, resetBookingData, setCurrentView, user } = useAppStore()
+  const { bookingData, updateBookingData, resetBookingData, setCurrentView, user, selectedService } = useAppStore()
 
   const handleNext = () => {
     if (step < 4) {
@@ -48,6 +48,7 @@ export default function BookingFlow() {
         date: bookingData.date?.toLocaleDateString('ru-RU'),
         time: bookingData.time,
         phone: bookingData.contactPhone,
+        price: bookingData.price,
       }
 
       await api.createOrder(orderData)
@@ -148,36 +149,47 @@ export default function BookingFlow() {
               className="space-y-4"
             >
               <h3 className="text-xl font-bold mb-4">Выберите класс автомобиля</h3>
-              {carClasses.map((carClass) => (
-                <motion.button
-                  key={carClass.id}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    updateBookingData({ carClass: carClass.name })
-                    setTimeout(() => handleNext(), 300)
-                  }}
-                  className={`w-full glass-card p-4 text-left transition-all ${
-                    bookingData.carClass === carClass.name
-                      ? 'ring-2 ring-blue-500 bg-blue-500/10'
-                      : ''
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl">{carClass.icon}</span>
-                      <div>
-                        <div className="font-semibold">{carClass.name}</div>
-                        <div className="text-sm text-gray-400">
-                          Коэффициент: {carClass.multiplier}x
+              {carClasses.map((carClass) => {
+                const price = selectedService?.prices[carClass.id as keyof typeof selectedService.prices] || 0
+                return (
+                  <motion.button
+                    key={carClass.id}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      updateBookingData({ 
+                        carClass: carClass.name,
+                        price: price
+                      })
+                      setTimeout(() => handleNext(), 300)
+                    }}
+                    className={`w-full glass-card p-4 text-left transition-all ${
+                      bookingData.carClass === carClass.name
+                        ? 'ring-2 ring-blue-500 bg-blue-500/10'
+                        : ''
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">{carClass.icon}</span>
+                        <div>
+                          <div className="font-semibold">{carClass.name}</div>
+                          <div className="text-sm text-gray-400">
+                            Коэффициент: {carClass.multiplier}x
+                          </div>
+                          {price > 0 && (
+                            <div className="text-lg font-bold text-blue-400 mt-1">
+                              {price.toLocaleString()} ₽
+                            </div>
+                          )}
                         </div>
                       </div>
+                      {bookingData.carClass === carClass.name && (
+                        <Check className="text-blue-500" size={24} />
+                      )}
                     </div>
-                    {bookingData.carClass === carClass.name && (
-                      <Check className="text-blue-500" size={24} />
-                    )}
-                  </div>
-                </motion.button>
-              ))}
+                  </motion.button>
+                )
+              })}
             </motion.div>
           )}
 
@@ -301,6 +313,12 @@ export default function BookingFlow() {
                   <span className="text-gray-400">Время:</span>
                   <span>{bookingData.time}</span>
                 </div>
+                {bookingData.price > 0 && (
+                  <div className="flex justify-between text-lg font-bold pt-3 mt-3 border-t border-white/10">
+                    <span className="text-gray-300">Итого:</span>
+                    <span className="text-blue-400">{bookingData.price.toLocaleString()} ₽</span>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}

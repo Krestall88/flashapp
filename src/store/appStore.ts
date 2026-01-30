@@ -13,7 +13,13 @@ interface Service {
   id: string
   name: string
   description: string
-  price: number
+  basePrice: number
+  prices: {
+    economy: number
+    comfort: number
+    business: number
+    premium: number
+  }
   category: string
   image: string
 }
@@ -26,6 +32,7 @@ interface BookingData {
   time: string
   contactName: string
   contactPhone: string
+  price: number
 }
 
 interface Order {
@@ -47,6 +54,7 @@ interface AppState {
   isAdmin: boolean
   services: Service[]
   bookingData: BookingData
+  selectedService: Service | null
   orders: Order[]
   setCurrentView: (view: ViewType) => void
   setUser: (user: User) => void
@@ -54,6 +62,7 @@ interface AppState {
   setServices: (services: Service[]) => void
   updateBookingData: (data: Partial<BookingData>) => void
   resetBookingData: () => void
+  setSelectedService: (service: Service | null) => void
   setOrders: (orders: Order[]) => void
   updateOrderStatus: (orderId: string, status: Order['status']) => void
 }
@@ -66,6 +75,7 @@ const initialBookingData: BookingData = {
   time: '',
   contactName: '',
   contactPhone: '',
+  price: 0,
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -74,6 +84,7 @@ export const useAppStore = create<AppState>((set) => ({
   isAdmin: false,
   services: [],
   bookingData: initialBookingData,
+  selectedService: null,
   orders: [],
   
   setCurrentView: (view) => set({ currentView: view }),
@@ -84,6 +95,7 @@ export const useAppStore = create<AppState>((set) => ({
     bookingData: { ...state.bookingData, ...data }
   })),
   resetBookingData: () => set({ bookingData: initialBookingData }),
+  setSelectedService: (service) => set({ selectedService: service }),
   setOrders: (orders) => set({ orders }),
   updateOrderStatus: (orderId, status) => set((state) => ({
     orders: state.orders.map(order =>

@@ -12,7 +12,10 @@
     "preview": "vite preview",
     "install:all": "npm install && cd server && npm install",
     "start": "concurrently \"npm run preview\" \"npm run server\" --names \"CLIENT,SERVER\" --prefix-colors \"cyan,magenta\"",
-    "server": "cd server && npm start"
+    "server": "cd server && npm start",
+    "seed:services": "node scripts/seed-services.js",
+    "seed:gallery": "node scripts/seed-gallery.js",
+    "seed:all": "npm run seed:services && npm run seed:gallery"
   },
   "dependencies": {
     "@twa-dev/sdk": "^7.10.1",

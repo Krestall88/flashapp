@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import { Sparkles, Car, Droplets, Shield, Star } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Sparkles, Car, Droplets, Shield, Star, Image as ImageIcon } from 'lucide-react'
 import { useAppStore } from '../../store/appStore'
 import { api } from '../../api/client'
+import Gallery from './Gallery'
 
 const categories = [
   { id: 'all', name: 'Все', icon: Sparkles },
@@ -16,7 +17,8 @@ const mockServices = [
     id: '1',
     name: 'Комплексная мойка',
     description: 'Полная мойка кузова и салона',
-    price: 2500,
+    basePrice: 2500,
+    prices: { economy: 2500, comfort: 3250, business: 4000, premium: 5000 },
     category: 'detailing',
     image: '🚗',
   },
@@ -24,7 +26,8 @@ const mockServices = [
     id: '2',
     name: 'Полировка кузова',
     description: 'Восстановление блеска ЛКП',
-    price: 8500,
+    basePrice: 8500,
+    prices: { economy: 8500, comfort: 11050, business: 13600, premium: 17000 },
     category: 'detailing',
     image: '✨',
   },
@@ -32,7 +35,8 @@ const mockServices = [
     id: '3',
     name: 'Химчистка салона',
     description: 'Глубокая чистка всех поверхностей',
-    price: 5500,
+    basePrice: 5500,
+    prices: { economy: 5500, comfort: 7150, business: 8800, premium: 11000 },
     category: 'detailing',
     image: '🧼',
   },
@@ -40,7 +44,8 @@ const mockServices = [
     id: '4',
     name: 'Аренда BMW X5',
     description: 'Премиум кроссовер',
-    price: 7500,
+    basePrice: 7500,
+    prices: { economy: 7500, comfort: 9750, business: 12000, premium: 15000 },
     category: 'rental',
     image: '🚙',
   },
@@ -48,7 +53,8 @@ const mockServices = [
     id: '5',
     name: 'Керамическое покрытие',
     description: 'Защита на 2-3 года',
-    price: 25000,
+    basePrice: 25000,
+    prices: { economy: 25000, comfort: 32500, business: 40000, premium: 50000 },
     category: 'protection',
     image: '🛡️',
   },
@@ -56,7 +62,8 @@ const mockServices = [
     id: '6',
     name: 'Оклейка пленкой',
     description: 'Защитная или тонировочная',
-    price: 35000,
+    basePrice: 35000,
+    prices: { economy: 35000, comfort: 45500, business: 56000, premium: 70000 },
     category: 'protection',
     image: '📦',
   },
@@ -64,7 +71,8 @@ const mockServices = [
 
 export default function HomeView() {
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const { setServices, setCurrentView, updateBookingData, user } = useAppStore()
+  const [galleryService, setGalleryService] = useState<typeof mockServices[0] | null>(null)
+  const { setCurrentView, setServices, updateBookingData, setSelectedService, user } = useAppStore()
 
   useEffect(() => {
     const loadServices = async () => {
@@ -83,6 +91,7 @@ export default function HomeView() {
     : mockServices.filter(s => s.category === selectedCategory)
 
   const handleServiceSelect = (service: typeof mockServices[0]) => {
+    setSelectedService(service)
     updateBookingData({
       serviceId: service.id,
       serviceName: service.name,
@@ -131,27 +140,52 @@ export default function HomeView() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => handleServiceSelect(service)}
-            className="glass-card p-4 cursor-pointer hover:bg-white/10 transition-colors"
+            className="glass-card p-4 relative group"
           >
-            <div className="text-4xl mb-3">{service.image}</div>
-            <h3 className="font-semibold mb-1 text-sm">{service.name}</h3>
-            <p className="text-xs text-gray-400 mb-3 line-clamp-2">
-              {service.description}
-            </p>
-            <div className="flex items-center justify-between">
-              <span className="text-blue-400 font-bold">
-                {service.price.toLocaleString()} ₽
-              </span>
-              <div className="flex items-center gap-1 text-yellow-400 text-xs">
-                <Star size={12} fill="currentColor" />
-                <span>4.8</span>
+            <div 
+              onClick={() => handleServiceSelect(service)}
+              className="cursor-pointer"
+            >
+              <div className="text-4xl mb-3">{service.image}</div>
+              <h3 className="font-semibold mb-1 text-sm">{service.name}</h3>
+              <p className="text-xs text-gray-400 mb-3 line-clamp-2">
+                {service.description}
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-blue-400 font-bold text-sm">
+                  от {service.basePrice.toLocaleString()} ₽
+                </span>
+                <div className="flex items-center gap-1 text-yellow-400 text-xs">
+                  <Star size={12} fill="currentColor" />
+                  <span>4.8</span>
+                </div>
               </div>
             </div>
+            
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={(e) => {
+                e.stopPropagation()
+                setGalleryService(service)
+              }}
+              className="absolute top-2 right-2 p-2 rounded-lg bg-black/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Посмотреть фото работ"
+            >
+              <ImageIcon size={16} className="text-white" />
+            </motion.button>
           </motion.div>
         ))}
       </div>
+
+      <AnimatePresence>
+        {galleryService && (
+          <Gallery
+            serviceId={galleryService.id}
+            serviceName={galleryService.name}
+            onClose={() => setGalleryService(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

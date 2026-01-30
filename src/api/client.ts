@@ -19,6 +19,16 @@ export const api = {
     return response.data
   },
 
+  createOrUpdateService: async (serviceData: any) => {
+    const response = await apiClient.post('/api/services', serviceData)
+    return response.data
+  },
+
+  deleteService: async (serviceId: string) => {
+    const response = await apiClient.delete(`/api/services/${serviceId}`)
+    return response.data
+  },
+
   createOrder: async (orderData: any) => {
     try {
       console.log('Creating order with data:', orderData)
@@ -54,6 +64,22 @@ export const api = {
 
   removeAdmin: async (userId: string) => {
     const response = await apiClient.delete(`/api/admins/${userId}`)
+    return response.data
+  },
+
+  getGallery: async (serviceId?: string) => {
+    const url = serviceId ? `/api/gallery?serviceId=${serviceId}` : '/api/gallery'
+    const response = await apiClient.get(url)
+    return response.data
+  },
+
+  addGalleryImage: async (serviceId: string, imageUrl: string, description?: string, order?: number) => {
+    const response = await apiClient.post('/api/gallery', { serviceId, imageUrl, description, order })
+    return response.data
+  },
+
+  removeGalleryImage: async (imageId: string) => {
+    const response = await apiClient.delete(`/api/gallery/${imageId}`)
     return response.data
   },
 }
