@@ -151,15 +151,33 @@ export default function AdminDashboard() {
             key={status}
             whileTap={{ scale: 0.95 }}
             onClick={() => setFilterStatus(status as any)}
-            className={`px-4 py-2 rounded-xl whitespace-nowrap text-sm font-medium transition-all ${
+            className={`px-4 py-2 rounded-xl whitespace-nowrap transition-colors ${
               filterStatus === status
                 ? 'bg-blue-500 text-white'
-                : 'glass-card text-gray-400'
+                : 'glass-card hover:bg-white/10'
             }`}
           >
-            {status === 'all' ? 'Все' : statusConfig[status as keyof typeof statusConfig]?.label}
+            {status === 'all' ? 'Все' : statusConfig[status as keyof typeof statusConfig].label}
           </motion.button>
         ))}
+      </div>
+
+      {/* Итоговая сумма */}
+      <div className="glass-card p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-gray-400">Итого по {filterStatus === 'all' ? 'всем заказам' : statusConfig[filterStatus as keyof typeof statusConfig]?.label.toLowerCase() || 'выбранным'}</p>
+            <p className="text-3xl font-bold text-blue-400 mt-1">
+              {orders.filter(o => filterStatus === 'all' || o.status === filterStatus).reduce((sum, order) => sum + (order.price || 0), 0).toLocaleString()} ₽
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-400">Заказов</p>
+            <p className="text-2xl font-bold mt-1">
+              {orders.filter(o => filterStatus === 'all' || o.status === filterStatus).length}
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="space-y-3">

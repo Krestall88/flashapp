@@ -5,10 +5,12 @@ export const servicesRouter = express.Router()
 
 servicesRouter.get('/', async (req, res) => {
   try {
+    console.log('📥 API: GET /api/services')
     const services = await sheetsService.getServices()
+    console.log(`📤 API: Returning ${services.length} services`)
     res.json(services)
   } catch (error) {
-    console.error('Error getting services:', error)
+    console.error('❌ API: Error getting services:', error)
     res.status(500).json({ error: 'Failed to get services' })
   }
 })

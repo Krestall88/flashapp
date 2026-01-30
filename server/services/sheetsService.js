@@ -15,6 +15,7 @@ class SheetsService {
     this.settingsSheet = null
     this.adminsSheet = null
     this.gallerySheet = null
+    this.clientsSheet = null
   }
 
   async initialize() {
@@ -53,6 +54,11 @@ class SheetsService {
         headerValues: ['id', 'serviceId', 'imageUrl', 'description', 'order']
       })
 
+      this.clientsSheet = this.doc.sheetsByTitle['clients'] || await this.doc.addSheet({ 
+        title: 'clients',
+        headerValues: ['userId', 'userName', 'phone', 'firstName', 'lastName', 'username', 'firstOrderDate', 'lastOrderDate', 'totalOrders', 'totalSpent']
+      })
+
       console.log('📊 Google Sheets connected:', this.doc.title)
     } catch (error) {
       console.error('Failed to initialize Google Sheets:', error)
@@ -63,14 +69,23 @@ class SheetsService {
   async getServices() {
     const cacheKey = 'services'
     const cached = cache.get(cacheKey)
-    if (cached) return cached
+    if (cached) {
+      console.log('📦 Returning cached services:', cached.length)
+      return cached
+    }
 
     try {
-      await this.servicesSheet.loadCells()
+      console.log('🔍 Loading services from Google Sheets...')
       const rows = await this.servicesSheet.getRows()
+      console.log('📊 Total rows in services sheet:', rows.length)
       
       const services = rows
-        .filter(row => row.get('active') === 'true')
+        .filter(row => {
+          const activeValue = row.get('active')
+          const isActive = activeValue === 'true' || activeValue === 'TRUE' || activeValue === true
+          console.log(`Service ${row.get('id')}: active=${activeValue}, filtered=${isActive}`)
+          return isActive
+        })
         .map(row => ({
           id: row.get('id'),
           name: row.get('name'),
@@ -86,10 +101,11 @@ class SheetsService {
           image: row.get('image'),
         }))
 
+      console.log('✅ Loaded services:', services.length)
       cache.set(cacheKey, services)
       return services
     } catch (error) {
-      console.error('Failed to get services:', error)
+      console.error('❌ Failed to get services:', error)
       return []
     }
   }
@@ -113,12 +129,52 @@ class SheetsService {
 
       await this.ordersSheet.addRow(order)
       
+      // Сохранить/обновить клиента
+      if (orderData.userId) {
+        await this.updateClient(orderData)
+      }
+      
       cache.del('orders')
       
       return order
     } catch (error) {
       console.error('Failed to create order:', error)
       throw error
+    }
+  }
+
+  async updateClient(orderData) {
+    try {
+      const rows = await this.clientsSheet.getRows()
+      const existingClient = rows.find(row => row.get('userId') === String(orderData.userId))
+
+      if (existingClient) {
+        // Обновить существующего клиента
+        existingClient.set('userName', orderData.userName)
+        existingClient.set('phone', orderData.phone || existingClient.get('phone'))
+        existingClient.set('lastOrderDate', new Date().toISOString())
+        existingClient.set('totalOrders', (parseInt(existingClient.get('totalOrders')) || 0) + 1)
+        existingClient.set('totalSpent', (parseFloat(existingClient.get('totalSpent')) || 0) + (orderData.price || 0))
+        await existingClient.save()
+      } else {
+        // Создать нового клиента
+        await this.clientsSheet.addRow({
+          userId: String(orderData.userId),
+          userName: orderData.userName,
+          phone: orderData.phone || '',
+          firstName: orderData.firstName || '',
+          lastName: orderData.lastName || '',
+          username: orderData.username || '',
+          firstOrderDate: new Date().toISOString(),
+          lastOrderDate: new Date().toISOString(),
+          totalOrders: 1,
+          totalSpent: orderData.price || 0
+        })
+      }
+      
+      cache.del('clients')
+    } catch (error) {
+      console.error('Failed to update client:', error)
     }
   }
 
@@ -299,11 +355,15 @@ class SheetsService {
     const cached = cache.get(cacheKey)
     
     if (cached) {
+      console.log(`📦 Returning cached gallery for ${serviceId || 'all'}:`, cached.length)
       return cached
     }
 
     try {
+      console.log(`🔍 Loading gallery from Google Sheets for serviceId: ${serviceId || 'all'}`)
       const rows = await this.gallerySheet.getRows()
+      console.log('📊 Total rows in gallery sheet:', rows.length)
+      
       let gallery = rows.map(row => ({
         id: row.get('id'),
         serviceId: row.get('serviceId'),
@@ -313,15 +373,23 @@ class SheetsService {
       }))
 
       if (serviceId) {
-        gallery = gallery.filter(item => item.serviceId === serviceId)
+        console.log(`🔍 Filtering gallery for serviceId: ${serviceId}`)
+        const serviceIdStr = String(serviceId)
+        gallery = gallery.filter(item => {
+          const itemServiceIdStr = String(item.serviceId)
+          const match = itemServiceIdStr === serviceIdStr
+          console.log(`Image ${item.id}: serviceId="${item.serviceId}" (${itemServiceIdStr}) vs "${serviceId}" (${serviceIdStr}), match=${match}`)
+          return match
+        })
       }
 
       gallery.sort((a, b) => a.order - b.order)
+      console.log(`✅ Loaded gallery images:`, gallery.length)
       
       cache.set(cacheKey, gallery)
       return gallery
     } catch (error) {
-      console.error('Failed to get gallery:', error)
+      console.error('❌ Failed to get gallery:', error)
       return []
     }
   }

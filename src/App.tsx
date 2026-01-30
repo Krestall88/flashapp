@@ -17,8 +17,20 @@ function App() {
     WebApp.expand()
     
     const initializeApp = async () => {
-      const user = WebApp.initDataUnsafe?.user
+      let user = WebApp.initDataUnsafe?.user
       const adminId = import.meta.env.VITE_ADMIN_ID
+      
+      // Для локальной разработки в браузере (не в Telegram)
+      if (!user && window.location.hostname === 'localhost') {
+        console.log('🔧 Development mode: Using mock user data')
+        user = {
+          id: 323976163, // Ваш Telegram ID
+          first_name: 'Admin',
+          last_name: 'User',
+          username: 'admin',
+          language_code: 'ru'
+        }
+      }
       
       if (user) {
         setUser({
@@ -30,6 +42,12 @@ function App() {
         
         // Проверяем админа из env
         let isUserAdmin = adminId && user.id.toString() === adminId
+        
+        // Для локальной разработки - всегда админ
+        if (window.location.hostname === 'localhost') {
+          isUserAdmin = true
+          console.log('🔧 Development mode: Admin access granted')
+        }
         
         // Проверяем админа из Google Sheets
         if (!isUserAdmin) {

@@ -7,10 +7,12 @@ export const galleryRouter = express.Router()
 galleryRouter.get('/', async (req, res) => {
   try {
     const { serviceId } = req.query
+    console.log(`📥 API: GET /api/gallery?serviceId=${serviceId || 'all'}`)
     const gallery = await sheetsService.getGallery(serviceId)
+    console.log(`📤 API: Returning ${gallery.length} gallery images`)
     res.json(gallery)
   } catch (error) {
-    console.error('Error getting gallery:', error)
+    console.error('❌ API: Error getting gallery:', error)
     res.status(500).json({ error: 'Failed to get gallery' })
   }
 })

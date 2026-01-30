@@ -6,12 +6,31 @@ if (API_URL && !API_URL.startsWith('http://') && !API_URL.startsWith('https://')
   API_URL = `https://${API_URL}`
 }
 
+console.log('🌐 API URL:', API_URL)
+
 export const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 })
+
+// Логирование всех запросов
+apiClient.interceptors.request.use(request => {
+  console.log('📤 API Request:', request.method?.toUpperCase(), request.url)
+  return request
+})
+
+apiClient.interceptors.response.use(
+  response => {
+    console.log('📥 API Response:', response.config.method?.toUpperCase(), response.config.url, '→', response.status)
+    return response
+  },
+  error => {
+    console.error('❌ API Error:', error.config?.method?.toUpperCase(), error.config?.url, '→', error.message)
+    return Promise.reject(error)
+  }
+)
 
 export const api = {
   getServices: async () => {
