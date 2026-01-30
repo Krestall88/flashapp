@@ -43,12 +43,12 @@ export default function BookingFlow() {
       const orderData = {
         userId: user?.id || user?.username,
         userName: bookingData.contactName || user?.firstName || user?.username || 'Не указано',
-        service: bookingData.serviceName,
+        services: bookingData.services,
         carClass: bookingData.carClass,
         date: bookingData.date?.toLocaleDateString('ru-RU'),
         time: bookingData.time,
         phone: bookingData.contactPhone,
-        price: bookingData.price,
+        price: bookingData.totalPrice,
       }
 
       await api.createOrder(orderData)
@@ -70,11 +70,16 @@ export default function BookingFlow() {
 
   const canProceed = () => {
     switch (step) {
-      case 1: return bookingData.carClass !== ''
-      case 2: return bookingData.date !== null
-      case 3: return bookingData.time !== ''
-      case 4: return bookingData.contactPhone !== '' && bookingData.contactPhone.length >= 10
-      default: return false
+      case 1:
+        return bookingData.carClass !== '' && bookingData.services.length > 0
+      case 2:
+        return bookingData.date !== null
+      case 3:
+        return bookingData.time !== ''
+      case 4:
+        return bookingData.contactPhone !== '' && bookingData.contactPhone.length >= 10
+      default:
+        return false
     }
   }
 
@@ -100,7 +105,7 @@ export default function BookingFlow() {
         <div className="glass-card p-4 rounded-xl w-full max-w-sm space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-gray-400">Услуга:</span>
-            <span>{bookingData.serviceName}</span>
+            <span>{bookingData.services.map(s => s.serviceName).join(', ')}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-400">Дата:</span>
@@ -122,7 +127,7 @@ export default function BookingFlow() {
           <button onClick={handleBack} className="p-2 hover:bg-white/10 rounded-lg">
             <ChevronLeft size={24} />
           </button>
-          <h2 className="font-semibold">{bookingData.serviceName}</h2>
+          <h2 className="font-semibold">{bookingData.services.length > 0 ? bookingData.services[0].serviceName : 'Бронирование'}</h2>
           <div className="w-10" />
         </div>
         
@@ -158,7 +163,7 @@ export default function BookingFlow() {
                     onClick={() => {
                       updateBookingData({ 
                         carClass: carClass.name,
-                        price: price
+                        totalPrice: price
                       })
                       setTimeout(() => handleNext(), 300)
                     }}
@@ -299,7 +304,7 @@ export default function BookingFlow() {
                 <h4 className="font-semibold mb-3">Детали заказа:</h4>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Услуга:</span>
-                  <span>{bookingData.serviceName}</span>
+                  <span>{bookingData.services.map(s => s.serviceName).join(', ')}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Класс:</span>
@@ -313,10 +318,10 @@ export default function BookingFlow() {
                   <span className="text-gray-400">Время:</span>
                   <span>{bookingData.time}</span>
                 </div>
-                {bookingData.price > 0 && (
+                {bookingData.totalPrice > 0 && (
                   <div className="flex justify-between text-lg font-bold pt-3 mt-3 border-t border-white/10">
                     <span className="text-gray-300">Итого:</span>
-                    <span className="text-blue-400">{bookingData.price.toLocaleString()} ₽</span>
+                    <span className="text-blue-400">{bookingData.totalPrice.toLocaleString()} ₽</span>
                   </div>
                 )}
               </div>

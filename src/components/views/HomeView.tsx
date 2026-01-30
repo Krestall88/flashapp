@@ -93,8 +93,12 @@ export default function HomeView() {
   const handleServiceSelect = (service: typeof mockServices[0]) => {
     setSelectedService(service)
     updateBookingData({
-      serviceId: service.id,
-      serviceName: service.name,
+      services: [{
+        serviceId: service.id,
+        serviceName: service.name,
+        price: service.basePrice
+      }],
+      totalPrice: service.basePrice
     })
     setCurrentView('booking')
   }
