@@ -129,7 +129,7 @@ export default function AdminDashboard() {
                 orders
                   .filter(order => filterStatus === 'all' || order.status === filterStatus)
                   .map((order, index) => {
-                    const config = statusConfig[order.status]
+                    const config = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.new
                     const StatusIcon = config.icon
                     
                     return (
