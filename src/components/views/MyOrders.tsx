@@ -59,7 +59,7 @@ export default function MyOrders() {
       ) : (
         <div className="space-y-3">
           {orders.map((order, index) => {
-            const config = statusConfig[order.status as keyof typeof statusConfig]
+            const config = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.new
             const StatusIcon = config.icon
 
             return (
@@ -72,8 +72,24 @@ export default function MyOrders() {
               >
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="font-semibold">{order.service}</h3>
+                    <h3 className="font-semibold">
+                      {(() => {
+                        try {
+                          const services = typeof order.services === 'string' 
+                            ? JSON.parse(order.services) 
+                            : order.services
+                          return services && services.length > 0 
+                            ? services.map((s: any) => s.serviceName).join(', ')
+                            : order.service || 'Услуга не указана'
+                        } catch (e) {
+                          return order.service || 'Услуга не указана'
+                        }
+                      })()}
+                    </h3>
                     <p className="text-sm text-gray-400">{order.carClass}</p>
+                    {order.price && order.price > 0 && (
+                      <p className="text-lg font-bold text-blue-400 mt-1">{order.price.toLocaleString()} ₽</p>
+                    )}
                   </div>
                   <div className={`flex items-center gap-2 ${config.color} px-3 py-1 rounded-full text-xs`}>
                     <StatusIcon size={14} />

@@ -143,12 +143,21 @@ export default function AdminDashboard() {
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
                             <h3 className="font-semibold">
-                              {order.services && order.services.length > 0 
-                                ? order.services.map((s: any) => s.serviceName).join(', ')
-                                : order.service}
+                              {(() => {
+                                try {
+                                  const services = typeof order.services === 'string' 
+                                    ? JSON.parse(order.services) 
+                                    : order.services
+                                  return services && services.length > 0 
+                                    ? services.map((s: any) => s.serviceName).join(', ')
+                                    : order.service || 'Услуга не указана'
+                                } catch (e) {
+                                  return order.service || 'Услуга не указана'
+                                }
+                              })()}
                             </h3>
                             <p className="text-sm text-gray-400">{order.userName}</p>
-                            {order.price > 0 && (
+                            {order.price && order.price > 0 && (
                               <p className="text-lg font-bold text-blue-400 mt-1">{order.price.toLocaleString()} ₽</p>
                             )}
                           </div>
