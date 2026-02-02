@@ -39,12 +39,6 @@ bot.start((ctx) => {
             text: '🚀 Открыть приложение',
             web_app: { url: webAppUrl }
           }
-        ],
-        [
-          {
-            text: '📊 Админка',
-            web_app: { url: adminUrl }
-          }
         ]
       ]
     }

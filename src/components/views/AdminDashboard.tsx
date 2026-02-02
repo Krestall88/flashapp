@@ -15,7 +15,7 @@ const statusConfig = {
 }
 
 export default function AdminDashboard() {
-  const { orders, setOrders, updateOrderStatus } = useAppStore()
+  const { orders, setOrders, updateOrderStatus, isAdmin } = useAppStore()
   const [isLoading, setIsLoading] = useState(false)
   const [filterStatus, setFilterStatus] = useState<'all' | 'new' | 'in_progress' | 'completed'>('all')
   const [activeTab, setActiveTab] = useState<'orders' | 'admins' | 'services' | 'clients'>('orders')
@@ -191,8 +191,11 @@ export default function AdminDashboard() {
                         <div className="flex gap-2">
                           <motion.button
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => setEditingOrder(order)}
-                            className="flex-1 bg-white/10 text-white py-2 rounded-lg text-sm font-medium hover:bg-white/20 transition-colors flex items-center justify-center gap-2"
+                            onClick={() => isAdmin ? setEditingOrder(order) : alert('Только для администраторов')}
+                            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                              isAdmin ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-white/5 text-gray-500 cursor-not-allowed'
+                            }`}
+                            disabled={!isAdmin}
                           >
                             <Edit size={16} />
                             Редактировать
@@ -200,16 +203,22 @@ export default function AdminDashboard() {
                           {order.status !== 'completed' && (
                             <motion.button
                               whileTap={{ scale: 0.98 }}
-                              onClick={() => handleStatusChange(order.id, getNextStatus(order.status) as any)}
-                              className="flex-1 bg-blue-500/20 text-blue-400 py-2 rounded-lg text-sm font-medium hover:bg-blue-500/30 transition-colors"
+                              onClick={() => isAdmin ? handleStatusChange(order.id, getNextStatus(order.status) as any) : alert('Только для администраторов')}
+                              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                isAdmin ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' : 'bg-blue-500/10 text-gray-500 cursor-not-allowed'
+                              }`}
+                              disabled={!isAdmin}
                             >
                               {order.status === 'new' ? 'Начать работу' : 'Завершить'}
                             </motion.button>
                           )}
                           <motion.button
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => handleDeleteOrder(order.id)}
-                            className="bg-red-500/20 text-red-400 p-2 rounded-lg hover:bg-red-500/30 transition-colors"
+                            onClick={() => isAdmin ? handleDeleteOrder(order.id) : alert('Только для администраторов')}
+                            className={`p-2 rounded-lg transition-colors ${
+                              isAdmin ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-red-500/10 text-gray-500 cursor-not-allowed'
+                            }`}
+                            disabled={!isAdmin}
                           >
                             <Trash2 size={16} />
                           </motion.button>

@@ -8,19 +8,20 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const { currentView, setCurrentView, isAdmin } = useAppStore()
+  const { currentView, setCurrentView } = useAppStore()
 
+  // ДЕМО-РЕЖИМ: Админка видна всем пользователям
   const navItems = [
     { id: 'home', label: 'Главная', icon: Home },
     { id: 'orders', label: 'Заказы', icon: ClipboardList },
     { id: 'ai', label: 'AI помощник', icon: MessageCircle },
-    ...(isAdmin ? [{ id: 'admin', label: 'Админ', icon: Shield }] : []),
+    { id: 'admin', label: 'Админ', icon: Shield }, // Всегда показываем в демо-режиме
   ]
 
   return (
     <div className="min-h-screen flex flex-col" style={{
-      background: 'var(--tg-theme-bg-color, #000000)',
-      color: 'var(--tg-theme-text-color, #ffffff)',
+      background: '#000000',
+      color: '#ffffff',
     }}>
       <main className="flex-1 overflow-y-auto pb-20">
         <motion.div

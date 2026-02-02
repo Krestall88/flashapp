@@ -40,14 +40,19 @@ function App() {
           username: user.username || '',
         })
         
-        // Проверяем админа из env
-        let isUserAdmin = adminId && user.id.toString() === adminId
+        // ДЕМО-РЕЖИМ: Все пользователи видят админку (только просмотр)
+        // Реальные админы (из env) могут вносить изменения
+        const isRealAdmin = adminId && user.id.toString() === adminId
         
-        // Для локальной разработки - всегда админ
+        // Для локальной разработки - всегда реальный админ
+        let isUserAdmin = isRealAdmin
         if (window.location.hostname === 'localhost') {
           isUserAdmin = true
           console.log('🔧 Development mode: Admin access granted')
         }
+        
+        // В демо-режиме показываем админку всем
+        console.log('🎭 Demo mode: Admin panel visible to all users (read-only for non-admins)')
         
         // Проверяем админа из Google Sheets
         if (!isUserAdmin) {
