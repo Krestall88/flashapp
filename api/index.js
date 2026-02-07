@@ -11,8 +11,23 @@ async function ensureInitialized() {
 }
 
 export default async function handler(req, res) {
-  const { pathname } = new URL(req.url, `http://${req.headers.host}`)
+  let { pathname } = new URL(req.url, `http://${req.headers.host}`)
   const method = req.method
+
+  // Normalize trailing slash (e.g. /api/settings/ -> /api/settings)
+  if (pathname.length > 1 && pathname.endsWith('/')) {
+    pathname = pathname.slice(0, -1)
+  }
+
+  // CORS headers (required for browser preflight)
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+
+  // Handle preflight requests
+  if (method === 'OPTIONS') {
+    return res.status(200).end()
+  }
 
   try {
     await ensureInitialized()
