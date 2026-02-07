@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, Car, Droplets, Shield, Star, Image as ImageIcon } from 'lucide-react'
+import { Sparkles, Car, Droplets, Shield, Star, Image as ImageIcon, MapPin, Clock, Globe, MessageSquare } from 'lucide-react'
 import { useAppStore } from '../../store/appStore'
 import { api } from '../../api/client'
 import Gallery from './Gallery'
+import ContactModal from '../ContactModal'
 
 const categories = [
   { id: 'all', name: 'Все', icon: Sparkles },
@@ -72,6 +73,8 @@ const mockServices = [
 export default function HomeView() {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [galleryService, setGalleryService] = useState<typeof mockServices[0] | null>(null)
+  const [companySettings, setCompanySettings] = useState<any>(null)
+  const [showContactModal, setShowContactModal] = useState(false)
   const { setCurrentView, setServices, services, updateBookingData, setSelectedService, user } = useAppStore()
 
   useEffect(() => {
@@ -88,7 +91,18 @@ export default function HomeView() {
         setServices(mockServices)
       }
     }
+
+    const loadSettings = async () => {
+      try {
+        const settings = await api.getSettings()
+        setCompanySettings(settings)
+      } catch (error) {
+        console.error('Failed to load company settings:', error)
+      }
+    }
+
     loadServices()
+    loadSettings()
   }, [setServices])
 
   const displayServices = services.length > 0 ? services : mockServices
@@ -119,6 +133,56 @@ export default function HomeView() {
           Выберите услугу для записи
         </p>
       </div>
+
+      {/* Company Info */}
+      {companySettings && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-card p-4 rounded-xl space-y-3"
+        >
+          <h3 className="font-semibold text-lg">{companySettings.name || 'Детейлинг Центр'}</h3>
+          {companySettings.description && (
+            <p className="text-sm text-gray-400">{companySettings.description}</p>
+          )}
+          <div className="space-y-2 text-sm">
+            {companySettings.address && (
+              <div className="flex items-start gap-2 text-gray-300">
+                <MapPin size={16} className="mt-0.5 flex-shrink-0" />
+                <span>{companySettings.address}</span>
+              </div>
+            )}
+            {companySettings.phone && (
+              <button
+                onClick={() => setShowContactModal(true)}
+                className="flex items-center gap-2 text-gray-300 hover:text-blue-400 transition-colors"
+              >
+                <MessageSquare size={16} className="flex-shrink-0" />
+                <span>Связаться с нами</span>
+              </button>
+            )}
+            {companySettings.website && (
+              <a
+                href={companySettings.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-gray-300 hover:text-blue-400 transition-colors"
+              >
+                <Globe size={16} className="flex-shrink-0" />
+                <span>Наш сайт</span>
+              </a>
+            )}
+            {companySettings.workingHours && (
+              <div className="flex items-center gap-2 text-gray-300">
+                <Clock size={16} className="flex-shrink-0" />
+                <span>
+                  {companySettings.workingHours.start} - {companySettings.workingHours.end}
+                </span>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
 
       <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
         {categories.map((category) => {
@@ -193,6 +257,16 @@ export default function HomeView() {
             serviceId={galleryService.id}
             serviceName={galleryService.name}
             onClose={() => setGalleryService(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showContactModal && companySettings && (
+          <ContactModal
+            phone={companySettings.phone}
+            contactMethods={companySettings.contactMethods || ['phone']}
+            onClose={() => setShowContactModal(false)}
           />
         )}
       </AnimatePresence>

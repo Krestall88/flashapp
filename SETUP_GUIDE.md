@@ -80,7 +80,7 @@ id | userId | userName | service | carClass | date | time | phone | status | cre
 #### Лист 3: `settings`
 Заголовки (первая строка):
 ```
-key | value
+key | efwe
 ```
 
 ## Шаг 3: Создание Telegram Bot

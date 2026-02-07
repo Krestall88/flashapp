@@ -7,6 +7,7 @@ import AdminManagement from './AdminManagement'
 import ServiceManager from './ServiceManager'
 import OrderEditor from './OrderEditor'
 import ClientsManager from './ClientsManager'
+import CompanySettings from './CompanySettings'
 
 const statusConfig = {
   new: { label: 'Новый', color: 'bg-blue-500', icon: AlertCircle },
@@ -18,7 +19,7 @@ export default function AdminDashboard() {
   const { orders, setOrders, updateOrderStatus, isAdmin } = useAppStore()
   const [isLoading, setIsLoading] = useState(false)
   const [filterStatus, setFilterStatus] = useState<'all' | 'new' | 'in_progress' | 'completed'>('all')
-  const [activeTab, setActiveTab] = useState<'orders' | 'admins' | 'services' | 'clients'>('orders')
+  const [activeTab, setActiveTab] = useState<'orders' | 'admins' | 'services' | 'clients' | 'settings'>('orders')
   const [editingOrder, setEditingOrder] = useState<any>(null)
 
   const loadOrders = async () => {
@@ -244,12 +245,10 @@ export default function AdminDashboard() {
         return <ServiceManager />
       case 'clients':
         return <ClientsManager />
+      case 'settings':
+        return <CompanySettings />
       default:
-        return (
-          <div className="space-y-4">
-            {/* ... */}
-          </div>
-        )
+        return null
     }
   }
 
@@ -321,6 +320,17 @@ export default function AdminDashboard() {
         >
           <Users size={18} />
           Клиенты
+        </motion.button>
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setActiveTab('settings')}
+          className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
+            activeTab === 'settings'
+              ? 'bg-blue-500 text-white'
+              : 'glass-card text-gray-400'
+          }`}
+        >
+          Настройки
         </motion.button>
       </div>
 

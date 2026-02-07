@@ -118,7 +118,17 @@ export const api = {
   },
 
   getClientOrders: async (userId: string) => {
-    const response = await apiClient.get(`/api/clients/${userId}/orders`)
+    const response = await axios.get(`${API_URL}/clients/${userId}/orders`)
+    return response.data
+  },
+
+  getSettings: async () => {
+    const response = await apiClient.get('/api/settings')
+    return response.data
+  },
+
+  updateSettings: async (settings: any) => {
+    const response = await apiClient.put('/api/settings', settings)
     return response.data
   },
 }
