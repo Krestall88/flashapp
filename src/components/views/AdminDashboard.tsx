@@ -274,11 +274,11 @@ export default function AdminDashboard() {
       </div>
 
       {/* Вкладки */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={() => setActiveTab('orders')}
-          className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
+          className={`flex-shrink-0 px-4 py-3 rounded-xl font-medium transition-all whitespace-nowrap ${
             activeTab === 'orders'
               ? 'bg-blue-500 text-white'
               : 'glass-card text-gray-400'
@@ -289,7 +289,7 @@ export default function AdminDashboard() {
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={() => setActiveTab('services')}
-          className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
+          className={`flex-shrink-0 px-4 py-3 rounded-xl font-medium transition-all whitespace-nowrap ${
             activeTab === 'services'
               ? 'bg-blue-500 text-white'
               : 'glass-card text-gray-400'
@@ -300,7 +300,7 @@ export default function AdminDashboard() {
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={() => setActiveTab('admins')}
-          className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
+          className={`flex-shrink-0 px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 whitespace-nowrap ${
             activeTab === 'admins'
               ? 'bg-blue-500 text-white'
               : 'glass-card text-gray-400'
@@ -312,7 +312,7 @@ export default function AdminDashboard() {
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={() => setActiveTab('clients')}
-          className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
+          className={`flex-shrink-0 px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 whitespace-nowrap ${
             activeTab === 'clients'
               ? 'bg-blue-500 text-white'
               : 'glass-card text-gray-400'
@@ -324,7 +324,7 @@ export default function AdminDashboard() {
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={() => setActiveTab('settings')}
-          className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
+          className={`flex-shrink-0 px-4 py-3 rounded-xl font-medium transition-all whitespace-nowrap ${
             activeTab === 'settings'
               ? 'bg-blue-500 text-white'
               : 'glass-card text-gray-400'

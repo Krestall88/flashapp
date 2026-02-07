@@ -94,7 +94,9 @@ export default function HomeView() {
 
     const loadSettings = async () => {
       try {
+        console.log('Loading company settings...')
         const settings = await api.getSettings()
+        console.log('Company settings loaded:', settings)
         setCompanySettings(settings)
       } catch (error) {
         console.error('Failed to load company settings:', error)
@@ -155,7 +157,7 @@ export default function HomeView() {
             {companySettings.phone && (
               <button
                 onClick={() => setShowContactModal(true)}
-                className="flex items-center gap-2 text-gray-300 hover:text-blue-400 transition-colors"
+                className="flex items-center gap-2 text-gray-300 hover:text-blue-400 transition-colors w-full text-left"
               >
                 <MessageSquare size={16} className="flex-shrink-0" />
                 <span>Связаться с нами</span>

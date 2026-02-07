@@ -90,13 +90,17 @@ export default function CompanySettings() {
 
   const handleSave = async () => {
     try {
-      await api.updateSettings(settings)
+      console.log('Saving settings:', settings)
+      const result = await api.updateSettings(settings)
+      console.log('Settings saved successfully:', result)
       WebApp.showAlert('Настройки сохранены!')
       setHasChanges(false)
       WebApp.HapticFeedback.notificationOccurred('success')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save settings:', error)
-      WebApp.showAlert('Ошибка сохранения настроек')
+      console.error('Error details:', error.response?.data || error.message)
+      const errorMsg = error.response?.data?.error || error.message || 'Неизвестная ошибка'
+      WebApp.showAlert(`Ошибка сохранения: ${errorMsg}`)
       WebApp.HapticFeedback.notificationOccurred('error')
     }
   }
