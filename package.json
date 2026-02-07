@@ -15,7 +15,8 @@
     "server": "cd server && npm start",
     "seed:services": "cd server && node scripts/seed-services.js",
     "seed:gallery": "cd server && node scripts/seed-gallery.js",
-    "seed:all": "npm run seed:services && npm run seed:gallery"
+    "init:settings": "cd server && node scripts/init-settings.js",
+    "seed:all": "npm run seed:services && npm run seed:gallery && npm run init:settings"
   },
   "dependencies": {
     "@twa-dev/sdk": "^7.10.1",
